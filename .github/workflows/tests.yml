@@ -52,7 +52,7 @@ jobs:
 #
   tests:
     runs-on: ubuntu-latest
-     steps:
+    steps:
       - name: make test
         run: make test
         working-directory: ${{ env.BRANCH }}
