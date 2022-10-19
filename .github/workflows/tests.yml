@@ -31,7 +31,7 @@ jobs:
         uses: golangci/golangci-lint-action@v2
         with:
           version: v1.41.1
-          working-directory: $GITHUB_ENV 
+          working-directory:
 
   
   test_build:
@@ -39,7 +39,7 @@ jobs:
     steps:
       - name: make build
         run: make build
-        working-directory: $GITHUB_ENV 
+        working-directory: /
 
 #      - name: Unit tests
 #        run: go test -v -count=1 -race -timeout=1m ./...
@@ -54,6 +54,4 @@ jobs:
     steps:
       - name: make test
         run: make test
-        working-directory: $GITHUB_ENV 
-
 
