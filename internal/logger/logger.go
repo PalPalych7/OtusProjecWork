@@ -8,9 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type Logger struct { // TODO
-}
-
 func New(fileName string, level string) *logrus.Logger {
 	logger := logrus.New()
 	var mylevel logrus.Level
