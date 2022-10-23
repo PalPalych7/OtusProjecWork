@@ -1,6 +1,6 @@
 [Logger]
 Level = "TRACE"
-LogFile="main.log"
+LogFile="../main.log"
 [DB]
 DbName="otusProj" 
 DbUserName="otus1" 
