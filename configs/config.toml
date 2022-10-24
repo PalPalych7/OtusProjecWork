@@ -1,10 +1,17 @@
 [Logger]
 Level = "TRACE"
 LogFile="../main.log"
+
 [DB]
 DbName="otusProj" 
 DbUserName="otus1" 
 DbPassword="123456"
+
 [GRPC]
 Host="127.0.0.1"
 Port="8080"
+
+[Bandit]
+FullLearnigCount=100
+PartialLearningCount=100
+FinalRandomPecent=10
