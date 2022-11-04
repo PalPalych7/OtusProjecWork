@@ -46,20 +46,34 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: ^1.18
+          go-version: ^1.16
 
       - name: Check out code
         uses: actions/checkout@v2
 
       - name: make lint
         run: make lint
+  lint17:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ~1.17
+
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: make lint
+        run: make lint
+
   lint2:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: ~1.18
+          go-version: ^1.18
 
       - name: Check out code
         uses: actions/checkout@v2
@@ -72,7 +86,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: ~1.19
+          go-version: ^1.19
 
       - name: Check out code
         uses: actions/checkout@v2
