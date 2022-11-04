@@ -55,7 +55,7 @@ func (b banditStruct) GetBannerNum(arrStruct []BannerStruct) int {
 	for _, v := range arrStruct {
 		showSum += v.ShowCount
 	}
-	if showSum <= b.BanditConfig.FullLearnigCount { //nolint //так нагляднее логика
+	if showSum <= b.BanditConfig.FullLearnigCount { //nolint (так нагляднее логика)
 		// режим обучения
 		res = rand.Intn(len(arrStruct)) //nolint
 	} else {
