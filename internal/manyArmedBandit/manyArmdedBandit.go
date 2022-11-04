@@ -57,7 +57,7 @@ func (b banditStruct) GetBannerNum(arrStruct []BannerStruct) int {
 	}
 	if showSum <= b.BanditConfig.FullLearnigCount { //nolint (так нагляднее логика)
 		// режим обучения
-		res = rand.Intn(len(arrStruct)) //nolint
+		res = rand.Intn(len(arrStruct))
 	} else {
 		rand100 := rand.Intn(101) //nolint // случайная величина для определения алгоритма
 		var randomPecent float32
