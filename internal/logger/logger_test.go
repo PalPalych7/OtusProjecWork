@@ -20,9 +20,9 @@ func getLineCount(file *os.File) int {
 func TestLogger(t *testing.T) {
 	fileName := "1_tst.log"
 	q := New(fileName, "debug")
-	q.Trace("trace") // не должен напечатать
-	q.Warn("warn")   // должен
-	q.Error("er")    // должен
+	q.Trace("trace")  // не должен напечатать
+	q.Warning("warn") // должен
+	q.Error("er")     // должен
 	file, err := os.Open(fileName)
 	require.NoError(t, err)
 	defer file.Close()

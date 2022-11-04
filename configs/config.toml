@@ -3,13 +3,13 @@ Level = "TRACE"
 LogFile="../main.log"
 
 [DB]
-DbName="otusProj" 
-DbUserName="otus1" 
+DbName="otusfinalproj" 
+DbUserName="testuser" 
 DbPassword="123456"
 
-[GRPC]
-Host="127.0.0.1"
-Port="8080"
+[Http]
+Host="127.0.0.2"
+Port="5000"
 
 [Bandit]
 FullLearnigCount=100

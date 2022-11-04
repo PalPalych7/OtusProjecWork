@@ -13,7 +13,7 @@ type LoggerConf struct {
 	Level   string
 }
 
-type GRPCConf struct {
+type HTTPConf struct {
 	Host string
 	Port string
 }
@@ -26,7 +26,7 @@ type DBConf struct {
 
 type Config struct {
 	Logger LoggerConf
-	GRPC   GRPCConf
+	HTTP   HTTPConf
 	DB     DBConf
 	Bandit manyArmedBandit.BanditConfig
 }

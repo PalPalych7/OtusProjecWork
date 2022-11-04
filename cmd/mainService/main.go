@@ -1,11 +1,17 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/PalPalych7/OtusProjectWork/internal/logger"
 	"github.com/PalPalych7/OtusProjectWork/internal/manyArmedBandit"
+	internalhttp "github.com/PalPalych7/OtusProjectWork/internal/server/http"
+	"github.com/PalPalych7/OtusProjectWork/internal/sqlstorage"
 )
 
 var configFile string
@@ -15,16 +21,41 @@ func init() {
 }
 
 func main() {
+	fmt.Println(os.Getpid())
+	ctx, cancel := signal.NotifyContext(context.Background(),
+		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	defer cancel()
 	flag.Parse()
 	fmt.Println(flag.Args(), configFile)
 	config := NewConfig(configFile)
 	fmt.Println("config=", config)
-	//	logg := logger.New(config.Logger.LogFile, config.Logger.Level)
-	logg := logger.New("", config.Logger.Level)
+	logg := logger.New(config.Logger.LogFile, config.Logger.Level)
 	fmt.Println(config.Logger.Level)
 	fmt.Println("logg=", logg)
 	logg.Info("Start!")
 	myBandid := manyArmedBandit.New(config.Bandit)
-	logg.Info("myBandid=", myBandid, myBandid.GetBannerId(2))
+	logg.Info("myBandid=", myBandid)
+
+	storage := sqlstorage.New(ctx, config.DB.DBName, config.DB.DBUserName, config.DB.DBPassword, myBandid)
+	logg.Info("Get new storage:", storage)
+	err := storage.Connect()
+	if err != nil {
+		logg.Fatal(err.Error())
+	}
+	defer storage.Close()
+
+	server := internalhttp.NewServer(ctx, storage, config.HTTP.Host+":"+config.HTTP.Port, logg)
+	defer server.Stop()
+
+	go func() {
+		fmt.Println("lets startserver!")
+		err = server.Start()
+		if err != nil {
+			logg.Fatal("failed to start http server: " + err.Error())
+		}
+		<-ctx.Done()
+	}()
+	<-ctx.Done()
+	fmt.Println("finish!")
 	logg.Info("finish!")
 }

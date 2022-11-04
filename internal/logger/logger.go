@@ -8,7 +8,17 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func New(fileName string, level string) *logrus.Logger {
+type MyLogger interface {
+	Trace(args ...interface{})
+	Debug(args ...interface{})
+	Info(args ...interface{})
+	Print(args ...interface{})
+	Warning(args ...interface{})
+	Error(args ...interface{})
+	Fatal(args ...interface{})
+}
+
+func New(fileName string, level string) MyLogger {
 	logger := logrus.New()
 	var mylevel logrus.Level
 	switch strings.ToUpper(level) {
