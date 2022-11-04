@@ -72,4 +72,4 @@ jobs:
         uses: golangci/golangci-lint-action@v3
         with:
           version: v1.41.1
-          working-directory: ${{ env.BRANCH }}        
+          working-directory:
