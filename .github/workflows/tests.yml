@@ -54,12 +54,12 @@ jobs:
       - name: make lint
         run: make lint
 
-lint2:
+  lint2:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go
         uses: actions/setup-go@v3
-
+  
       - name: Check out code
         uses: actions/checkout@v3
 
