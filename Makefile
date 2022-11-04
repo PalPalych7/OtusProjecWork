@@ -29,9 +29,8 @@ test:
 	go test -race ./internal/... 
 
 install-lint-deps:
-	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.41.1
-
+	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.46.2
 lint: install-lint-deps
-	CGO_ENABLED=0 golangci-lint run ./...
+	CGO_ENABLED=0 golangci-lint run ./... --config=./.golangci.yml
 
 .PHONY: build run build-img run-img test lint
