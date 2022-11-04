@@ -49,17 +49,6 @@ func TestHTTP(t *testing.T) {
 		require.NoError(t, errResp2)
 		fmt.Println(resp2, errResp2)
 
-		// увеличить счётчик
-		reqBody3 := ForBannerClick{1, 4, 1}
-		fmt.Println("reqBody=", reqBody3)
-		bodyRaw3, errM3 := json.Marshal(reqBody3)
-		require.NoError(t, errM3)
-		req3, err3 := http.NewRequestWithContext(ctx, http.MethodPost, myHTTP+"BannerClick", bytes.NewBuffer(bodyRaw3))
-		require.NoError(t, err3)
-		resp3, errResp3 := client.Do(req3) //nolint
-		require.NoError(t, errResp3)
-		fmt.Println(resp3, errResp3)
-
 		// получение баннера для показа
 		reqBody := ForGetBanner{1, 1}
 		fmt.Println("reqBody=", reqBody)
@@ -80,5 +69,17 @@ func TestHTTP(t *testing.T) {
 		errUnm := json.Unmarshal(bodyBytes, &bannerId)
 		fmt.Println(errUnm, bannerId)
 		require.NoError(t, errUnm)
+
+		// увеличить счётчик
+		reqBody3 := ForBannerClick{1, bannerId, 1}
+		fmt.Println("reqBody=", reqBody3)
+		bodyRaw3, errM3 := json.Marshal(reqBody3)
+		require.NoError(t, errM3)
+		req3, err3 := http.NewRequestWithContext(ctx, http.MethodPost, myHTTP+"BannerClick", bytes.NewBuffer(bodyRaw3))
+		require.NoError(t, err3)
+		resp3, errResp3 := client.Do(req3) //nolint
+		require.NoError(t, errResp3)
+		fmt.Println(resp3, errResp3)
+
 	})
 }
