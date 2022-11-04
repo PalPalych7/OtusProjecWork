@@ -39,23 +39,8 @@ jobs:
       - name: make test
         run: make test
         working-directory:
-
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: ^1.16
-
-      - name: Check out code
-        uses: actions/checkout@v3
-
-      - name: make lint
-        run: make lint
-        working-directory:
   
-  lint2:
+  lint:
     runs-on: ubuntu-latest
     if: ${{ !contains(github.ref, 'calendar') }}
     steps:
