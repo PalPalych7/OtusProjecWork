@@ -4,8 +4,7 @@ import (
 	"fmt"
 
 	"github.com/BurntSushi/toml"
-
-	"github.com/PalPalych7/OtusProjectWork/internal/manyArmedBandit"
+	manyarmedbandit "github.com/PalPalych7/OtusProjectWork/internal/manyArmedBandit"
 )
 
 type LoggerConf struct {
@@ -28,7 +27,7 @@ type Config struct {
 	Logger LoggerConf
 	HTTP   HTTPConf
 	DB     DBConf
-	Bandit manyArmedBandit.BanditConfig
+	Bandit manyarmedbandit.BanditConfig
 }
 
 func NewConfig(configFile string) Config {

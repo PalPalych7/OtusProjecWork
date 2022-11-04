@@ -1,17 +1,17 @@
 package internalhttp
 
 type SlotBanner struct {
-	SlotId   int
-	BannerId int
+	SlotID   int
+	BannerID int
 }
 
 type ForBannerClick struct {
-	SlotId     int
-	BannerId   int
-	SocGroupId int
+	SlotID     int
+	BannerID   int
+	SocGroupID int
 }
 
 type ForGetBanner struct {
-	SlotId     int
-	SocGroupId int
+	SlotID     int
+	SocGroupID int
 }

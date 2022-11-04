@@ -9,7 +9,7 @@ import (
 	"syscall"
 
 	"github.com/PalPalych7/OtusProjectWork/internal/logger"
-	"github.com/PalPalych7/OtusProjectWork/internal/manyArmedBandit"
+	manyarmedbandit "github.com/PalPalych7/OtusProjectWork/internal/manyArmedBandit"
 	internalhttp "github.com/PalPalych7/OtusProjectWork/internal/server/http"
 	"github.com/PalPalych7/OtusProjectWork/internal/sqlstorage"
 )
@@ -33,13 +33,12 @@ func main() {
 	fmt.Println(config.Logger.Level)
 	fmt.Println("logg=", logg)
 	logg.Info("Start!")
-	myBandid := manyArmedBandit.New(config.Bandit)
+	myBandid := manyarmedbandit.New(config.Bandit)
 	logg.Info("myBandid=", myBandid)
 
 	storage := sqlstorage.New(ctx, config.DB.DBName, config.DB.DBUserName, config.DB.DBPassword, myBandid)
 	logg.Info("Get new storage:", storage)
-	err := storage.Connect()
-	if err != nil {
+	if err := storage.Connect(); err != nil {
 		logg.Fatal(err.Error())
 	}
 	defer storage.Close()
@@ -49,8 +48,7 @@ func main() {
 
 	go func() {
 		fmt.Println("lets startserver!")
-		err = server.Start()
-		if err != nil {
+		if err := server.Start(); err != nil {
 			logg.Fatal("failed to start http server: " + err.Error())
 		}
 		<-ctx.Done()

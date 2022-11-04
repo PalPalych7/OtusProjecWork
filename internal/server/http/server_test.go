@@ -1,3 +1,6 @@
+//go:build integration || ignore || (тест && ignore) || только || при || поднятой || базе || и || запущенном || основном || сервисе
+// +build integration ignore тест,ignore только при поднятой базе и запущенном основном сервисе
+
 package internalhttp
 
 import (
@@ -13,7 +16,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//  Перед тестами запустить прилжение, чтобы стартовался сервер
 func TestHTTP(t *testing.T) {
 	t.Run("main", func(t *testing.T) {
 		client := http.Client{
@@ -37,7 +39,7 @@ func TestHTTP(t *testing.T) {
 		require.Empty(t, bodyBytes1)
 
 		// удаление баннера со слота
-		reqBody2 := SlotBanner{9, 1}
+		reqBody2 := SlotBanner{1, 7}
 		fmt.Println("reqBody=", reqBody2)
 		bodyRaw2, errM2 := json.Marshal(reqBody2)
 		require.NoError(t, errM2)
@@ -58,7 +60,7 @@ func TestHTTP(t *testing.T) {
 		require.NoError(t, errResp3)
 		fmt.Println(resp3, errResp3)
 
-		// gполучение баннера для показа
+		// получение баннера для показа
 		reqBody := ForGetBanner{1, 1}
 		fmt.Println("reqBody=", reqBody)
 		bodyRaw, errM := json.Marshal(reqBody)
@@ -78,6 +80,5 @@ func TestHTTP(t *testing.T) {
 		errUnm := json.Unmarshal(bodyBytes, &bannerId)
 		fmt.Println(errUnm, bannerId)
 		require.NoError(t, errUnm)
-
 	})
 }

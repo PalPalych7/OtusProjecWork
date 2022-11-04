@@ -25,9 +25,6 @@ build-compose:
 run-compose: build-compose
 	docker-compose up -d --build
 
-#version: build
-#	$(BIN) version
-#
 test:
 	go test -race ./internal/... 
 
@@ -37,8 +34,4 @@ install-lint-deps:
 lint: install-lint-deps
 	CGO_ENABLED=0 golangci-lint run ./...
 
-
-grpc_generate:
-	protoc --proto_path=api --go_out=pb/ --go-grpc_out=pb/ api/*.proto
-
-.PHONY: build run build-img run-img version test lint
+.PHONY: build run build-img run-img test lint

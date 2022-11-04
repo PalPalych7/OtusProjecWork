@@ -1,4 +1,4 @@
-package manyArmedBandit
+package manyarmedbandit
 
 import (
 	"fmt"
@@ -10,28 +10,29 @@ import (
 )
 
 func isClick(myRandProc int) int {
-	curRand := rand.Intn(101)
+	var res int
+	curRand := rand.Intn(101) //nolint
+
 	if myRandProc >= curRand {
-		return 1
-	} else {
-		return 0
+		res = 1
 	}
+	return res
 }
 
 func TestLogger(t *testing.T) {
 	var myArStruct []BannerStruct
-	var myRandProc []int     // сгенерированная вероятность кликоа на баннер
-	var genCount int = 50000 // количество запросов
-	var bannerCount int = 50 // кол-во баннеров
+	var myRandProc []int // сгенерированная вероятность кликоа на баннер
+	genCount := 50000    // количество запросов
+	bannerCount := 50    // кол-во баннеров
 	rand.Seed(time.Now().UTC().UnixNano())
 	var minProc float32 = 100
-	var maxProc float32 = 0
+	var maxProc float32
 
 	myBandit := New(BanditConfig{500, 500, 10})
 
 	for i := 1; i <= bannerCount; i++ { // генерим вероятность клика для каждого баннера
 		myArStruct = append(myArStruct, BannerStruct{i, 0, 0})
-		myRandProc = append(myRandProc, rand.Intn(101))
+		myRandProc = append(myRandProc, rand.Intn(101)) //nolint
 	}
 
 	for i := 1; i <= genCount; i++ { // вызов метода заданное кол-во раз
@@ -40,7 +41,6 @@ func TestLogger(t *testing.T) {
 		if isClick(myRandProc[curNum]) == 1 { // определения кликнули ли по баннеру на основании сгенерированной вероятности
 			myArStruct[curNum].ClickCount++ // увеличение счётчмка кликов
 		}
-
 	}
 
 	for i := 0; i < bannerCount; i++ { // определение процента показа для самого популярного и самого редкого баннера
@@ -53,8 +53,10 @@ func TestLogger(t *testing.T) {
 	}
 	fmt.Println("minProc=", minProc)
 	fmt.Println("maxProc=", maxProc)
-	require.LessOrEqual(t, 100/float32(bannerCount)*2, maxProc)   // максимальный должен показываться минимум в 2 раза чаще среднестатистического (для 50 баннеров >4%)
-	require.LessOrEqual(t, minProc, 100/float32(bannerCount)/2)   // минимальный должен показываться минимум в 2 раза реже среднестатистического (для 50 баннеров <1%)
-	require.LessOrEqual(t, 100/float32(bannerCount)/100, minProc) // минимальный должен показываться чаще чем 1/20 от среднестатистического (для 50 баннеров >0,1%)
-
+	// максимальный должен показываться минимум в 2 раза чаще среднестатистического (для 50 баннеров >4%)
+	require.LessOrEqual(t, 100/float32(bannerCount)*2, maxProc)
+	// минимальный должен показываться минимум в 2 раза реже среднестатистического (для 50 баннеров <1%)
+	require.LessOrEqual(t, minProc, 100/float32(bannerCount)/2)
+	// минимальный должен показываться чаще чем 1/20 от среднестатистического (для 50 баннеров >0,1%)
+	require.LessOrEqual(t, 100/float32(bannerCount)/100, minProc)
 }

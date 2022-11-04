@@ -17,6 +17,7 @@ func getLineCount(file *os.File) int {
 	}
 	return lineCount
 }
+
 func TestLogger(t *testing.T) {
 	fileName := "1_tst.log"
 	q := New(fileName, "debug")
@@ -40,5 +41,4 @@ func TestLogger(t *testing.T) {
 	defer file.Close()
 	defer os.Remove(fileName)
 	require.Equal(t, 1, getLineCount(file))
-
 }

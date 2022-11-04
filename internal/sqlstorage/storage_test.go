@@ -1,3 +1,6 @@
+//go:build integration || ignore || (тест && ignore) || только || при || поднятой || БД
+// +build integration ignore тест,ignore только при поднятой БД
+
 package sqlstorage
 
 import (
@@ -18,38 +21,23 @@ func TestStorage(t *testing.T) {
 		err := storage.Connect()
 		require.NoError(t, err)
 
-		err2, bammerId := storage.GetBannerForSlot(1, 1)
-		require.NoError(t, err2)
+		bammerId, err := storage.GetBannerForSlot(1, 1)
+		require.NoError(t, err)
+		require.Greater(t, bammerId, 0)
 		fmt.Println(bammerId)
-		/*
-			err2 := storage.DelBannerSlot(2, 2)
-			require.NoError(t, err2)
 
-			err3 := storage.BannerClick(1, 1, 1)
-			require.NoError(t, err3)
-		*/
+		err2 := storage.AddBannerSlot(2, 2)
+		require.NoError(t, err2)
+
+		err3 := storage.DelBannerSlot(2, 2)
+		require.NoError(t, err3)
+
+		err4 := storage.BannerClick(1, 1, 1)
+		require.NoError(t, err4)
+
 		// close DB
 		err = storage.Close()
 		require.NoError(t, err)
 
-		/*
-			// Get Event By Date
-			//		myEventList, err2 := storage.GetEventByDate("2022-05-11")
-			myEventList, err2 := storage.GetEventByDate("11.05.2022")
-			require.NoError(t, err2)
-			len1 := len(myEventList)
-
-			// new event
-			err = storage.CreateEvent("t1", "11.05.2022", "something", 1)
-			require.NoError(t, err)
-
-			// Get Event By Date2
-			myEventList, err2 = storage.GetEventByDate("11.05.2022")
-			require.NoError(t, err2)
-			len2 := len(myEventList)
-			fmt.Println(len2)
-			require.Equal(t, len1+1, len2)
-
-		*/
 	})
 }
