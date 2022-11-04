@@ -39,66 +39,7 @@ jobs:
       - name: make test
         run: make test
         working-directory:
-  
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Extract branch name
-        run: echo "BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
-
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: ^1.16
-
-      - name: Check out code
-        uses: actions/checkout@v3
-
-      - name: Linters
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: v1.41.1
-          working-directory:
-
-  lint2:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Extract branch name
-        run: echo "BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
-
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: ^1.17
-
-      - name: Check out code
-        uses: actions/checkout@v3
-
-      - name: Linters
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: v1.41.1
-          working-directory:          
-  lint3:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Extract branch name
-        run: echo "BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
-
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: ~1.16
-
-      - name: Check out code
-        uses: actions/checkout@v3
-
-      - name: Linters
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: v1.41.1
-          working-directory:                    
-
+               
   lint4:
     runs-on: ubuntu-latest
     steps:
@@ -119,20 +60,6 @@ jobs:
           version: v1.41.1
           working-directory:                    
 
-  lint5:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: ^1.16
-
-      - name: Check out code
-        uses: actions/checkout@v3
-
-      - name: make lint
-        run: make lint
-
   lint6:
     runs-on: ubuntu-latest
     steps:
@@ -146,18 +73,3 @@ jobs:
 
       - name: make lint
         run: make lint
-
-  lint7:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: ~1.16
-
-      - name: Check out code
-        uses: actions/checkout@v3
-
-      - name: make lint
-        run: make lint
-
