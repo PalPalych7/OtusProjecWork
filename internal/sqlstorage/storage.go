@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	manyarmedbandit "github.com/PalPalych7/OtusProjectWork/internal/manyArmedBandit"
-	_ "github.com/jackc/pgx/stdlib" // justifying
+	_ "github.com/jackc/pgx/stdlib" //justifying
 	_ "github.com/lib/pq"
 )
 
