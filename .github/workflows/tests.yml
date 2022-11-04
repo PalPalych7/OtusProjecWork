@@ -21,19 +21,6 @@ jobs:
   test_lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Extract branch name
-        run: echo "BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
-      - name: Check out code
-        uses: actions/checkout@v2
-      - name: Linters
-        uses: golangci/golangci-lint-action@v2
-        with:
-          version: v1.41.1
-          working-directory:
-
-  test_lint_by_make:
-    runs-on: ubuntu-latest
-    steps:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
