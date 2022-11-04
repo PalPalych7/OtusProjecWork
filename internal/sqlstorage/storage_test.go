@@ -8,13 +8,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/PalPalych7/OtusProjectWork/internal/manyArmedBandit"
+	manyarmedbandit "github.com/PalPalych7/OtusProjectWork/internal/manyArmedBandit"
 	"github.com/stretchr/testify/require"
 )
 
 func TestStorage(t *testing.T) {
 	t.Run("main", func(t *testing.T) {
-		myBandit := manyArmedBandit.New(manyArmedBandit.BanditConfig{500, 500, 10})
+		myBandit := manyarmedbandit.New(manyarmedbandit.BanditConfig{500, 500, 10})
 		storage := New(context.Background(), "otusfinalproj", "testuser", "123456", myBandit)
 
 		// DB connect
@@ -38,6 +38,5 @@ func TestStorage(t *testing.T) {
 		// close DB
 		err = storage.Close()
 		require.NoError(t, err)
-
 	})
 }
