@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/BurntSushi/toml"
+	manyarmedbandit "github.com/PalPalych7/OtusProjectWork/internal/manyArmedBandit"
 )
 
 type LoggerConf struct {
@@ -11,7 +12,7 @@ type LoggerConf struct {
 	Level   string
 }
 
-type GRPCConf struct {
+type HTTPConf struct {
 	Host string
 	Port string
 }
@@ -24,8 +25,9 @@ type DBConf struct {
 
 type Config struct {
 	Logger LoggerConf
-	GRPC   GRPCConf
+	HTTP   HTTPConf
 	DB     DBConf
+	Bandit manyarmedbandit.BanditConfig
 }
 
 func NewConfig(configFile string) Config {
