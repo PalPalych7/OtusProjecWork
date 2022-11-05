@@ -1,4 +1,5 @@
 BIN := "./bin/mainService"
+BIN_SS := "./bin/statSender"
 DOCKER_IMG="banner_rotation:develop"
 
 GIT_HASH := $(shell git log --format="%h" -n 1)
@@ -9,6 +10,13 @@ build:
 
 run: build
 	$(BIN) -config ./configs/config.toml
+
+
+build_ss:
+	go build -v -o $(BIN_SS) -ldflags "$(LDFLAGS)" ./cmd/statSender
+
+run_ss: build_ss
+	$(BIN_SS) -config ./configs/statSenderConfig.toml
 
 build-img:
 	docker build \

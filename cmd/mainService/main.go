@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"os"
 	"os/signal"
 	"syscall"
 
@@ -21,7 +20,6 @@ func init() {
 }
 
 func main() {
-	fmt.Println(os.Getpid())
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
@@ -36,7 +34,7 @@ func main() {
 	myBandid := manyarmedbandit.New(config.Bandit)
 	logg.Info("myBandid=", myBandid)
 
-	storage := sqlstorage.New(ctx, config.DB.DBName, config.DB.DBUserName, config.DB.DBPassword, myBandid)
+	storage := sqlstorage.New(ctx, config.DB.DBName, config.DB.DBUserName, config.DB.DBPassward, myBandid)
 	logg.Info("Get new storage:", storage)
 	if err := storage.Connect(); err != nil {
 		logg.Fatal(err.Error())

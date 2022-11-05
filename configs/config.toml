@@ -5,7 +5,7 @@ LogFile="../main.log"
 [DB]
 DbName="otusfinalproj" 
 DbUserName="testuser" 
-DbPassword="123456"
+DbPassward="123456"
 
 [Http]
 Host="127.0.0.2"

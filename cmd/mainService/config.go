@@ -20,7 +20,7 @@ type HTTPConf struct {
 type DBConf struct {
 	DBName     string
 	DBUserName string
-	DBPassword string
+	DBPassward string
 }
 
 type Config struct {
