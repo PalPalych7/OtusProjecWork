@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   postgres:
-    container_name: postgres_container_2
+    container_name: postgres_container
     image: postgres:13.3    
     environment:
       POSTGRES_DB: postgres
@@ -14,11 +14,18 @@ services:
 #      - .:/var/lib/postgresql/data
     ports:
       - 5432:5432
+      
 #    networks:
 #      - postgres
-
+  rabbitmq:
+    container_name: rabbitmq_container
+    image: 'rabbitmq:3.6-management-alpine'
+    ports:
+      - 15672:15672
+      - 5672:5672
+  
   mainSevice:
-    container_name: banner_rotation_2
+    container_name: banner_rotation_container
     image: banner_rotation:develop    
 #    networks:
 #      - postgres

@@ -1,0 +1,15 @@
+[Logger]
+Level="TRACE"
+LogFile="../statSender.log"
+
+[DB]
+DbName="otusfinalproj" 
+DbUserName="testuser" 
+DbPassward="123456"
+
+[Rabbit]
+uri="amqp://guest:guest@localhost:5672/"
+exchange="statSender"
+exchangeType="direct"
+queue="queue1"
+bindingKey="myKey"

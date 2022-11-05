@@ -19,12 +19,23 @@ type Storage struct {
 	MyBandit   manyarmedbandit.MyBandit
 }
 
+type BannerStatStruct struct {
+	Id           int
+	Slot_id      int
+	Banner_id    int
+	Soc_group_id int
+	Stat_type    string
+	Rec_date     string
+}
+
 type MyStorage interface {
 	Connect() error
 	AddBannerSlot(slotID int, bannerID int) error
 	DelBannerSlot(slotID int, bannerID int) error
 	BannerClick(slotID int, bannerID int, socGroupID int) error
 	GetBannerForSlot(slotID int, socGroupID int) (int, error)
+	GetBannerStat() ([]BannerStatStruct, error)
+	ChangeSendStatID(ID int) error
 	Close() error
 }
 
@@ -37,6 +48,20 @@ func rowsToStruct(rows *sql.Rows) ([]manyarmedbandit.BannerStruct, error) {
 			return nil, err
 		}
 		myBannerList = append(myBannerList, manyarmedbandit.BannerStruct{bannerID, ShowCount, ClickCount}) //nolint
+	}
+	return myBannerList, nil
+}
+
+func rowsToStat(rows *sql.Rows) ([]BannerStatStruct, error) {
+	var myBannerList []BannerStatStruct
+	var id, slot_id, banner_id, soc_group_id int
+	var stat_type, rec_date string
+	defer rows.Close()
+	for rows.Next() {
+		if err := rows.Scan(&id, &slot_id, &banner_id, &soc_group_id, &stat_type, &rec_date); err != nil {
+			return nil, err
+		}
+		myBannerList = append(myBannerList, BannerStatStruct{id, slot_id, banner_id, soc_group_id, stat_type, rec_date})
 	}
 	return myBannerList, nil
 }
@@ -124,6 +149,33 @@ func (s *Storage) GetBannerForSlot(slotID int, socGroupID int) (int, error) {
 	`
 	_, err := s.DBConnect.ExecContext(s.Ctx, query, slotID, myBannerID, socGroupID)
 	return myBannerID, err
+}
+
+func (s *Storage) GetBannerStat() ([]BannerStatStruct, error) {
+	queryStat := `
+		select  *
+		from banner_stat
+		where id>(select max(banner_stat_id) from send_stat_max_id)	
+	`
+	myStat, errStat := s.DBConnect.QueryContext(s.Ctx, queryStat)
+	if errStat != nil {
+		return nil, errStat
+	}
+
+	myBannerStatList, errStruct := rowsToStat(myStat)
+	if errStruct != nil {
+		return nil, errStruct
+	}
+	return myBannerStatList, nil
+}
+
+func (s *Storage) ChangeSendStatID(ID int) error {
+	query := `
+			update send_stat_max_id
+			set banner_stat_id = $1
+		`
+	_, err := s.DBConnect.ExecContext(s.Ctx, query, ID)
+	return err
 }
 
 func (s *Storage) Close() error {

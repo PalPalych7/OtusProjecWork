@@ -1,6 +1,3 @@
-//go:build integration || ignore || (тест && ignore) || только || при || поднятой || базе || и || запущенном || основном || сервисе
-// +build integration ignore тест,ignore только при поднятой базе и запущенном основном сервисе
-
 package internalhttp
 
 import (
