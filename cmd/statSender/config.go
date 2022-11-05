@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/BurntSushi/toml"
-
 	rabbitmq "github.com/PalPalych7/OtusProjectWork/internal/rabbitMQ"
 )
 

@@ -11,7 +11,6 @@ import (
 
 	"github.com/PalPalych7/OtusProjectWork/internal/logger"
 	rabbitmq "github.com/PalPalych7/OtusProjectWork/internal/rabbitMQ"
-
 	"github.com/PalPalych7/OtusProjectWork/internal/sqlstorage"
 )
 
@@ -44,7 +43,7 @@ func main() {
 	}
 	defer storage.Close()
 
-	myRQ, err := rabbitmq.CreateQueue(config.Rabbit, ctx)
+	myRQ, err := rabbitmq.CreateQueue(ctx, config.Rabbit)
 	if err != nil {
 		logg.Fatal(err.Error())
 	}
@@ -56,7 +55,7 @@ func main() {
 			// отправка оповещений
 			myStatList, err2 := storage.GetBannerStat()
 			countRec := len(myStatList)
-			if err2 != nil {
+			if err2 != nil { //nolint
 				logg.Error("ошибка получения статистики-", err2)
 			} else if countRec == 0 {
 				logg.Info("Данных для отправки не найдено")
@@ -71,7 +70,7 @@ func main() {
 				} else {
 					logg.Info("сообщение успешно отпралвено")
 				}
-				myStatID := myStatList[countRec-1].Id
+				myStatID := myStatList[countRec-1].ID
 				logg.Info("max_stat_id=", myStatID)
 				if errChID := storage.ChangeSendStatID(myStatID); errChID != nil {
 					logg.Error("ошибка обновления max ID отправки -", errMarsh)

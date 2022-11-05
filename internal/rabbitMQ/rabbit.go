@@ -62,7 +62,7 @@ func (r *RabbitQueue) Handle() {
 	r.done <- nil
 }
 
-func CreateQueue(q RabbitCFG, ctx context.Context) (*RabbitQueue, error) {
+func CreateQueue(ctx context.Context, q RabbitCFG) (*RabbitQueue, error) {
 	c := &RabbitQueue{
 		rabCfg:  q,
 		conn:    nil,

@@ -20,12 +20,12 @@ type Storage struct {
 }
 
 type BannerStatStruct struct {
-	Id           int
-	Slot_id      int
-	Banner_id    int
-	Soc_group_id int
-	Stat_type    string
-	Rec_date     string
+	ID         int
+	SlotID     int
+	BannerID   int
+	SocGroupID int
+	StatType   string
+	RecDate    string
 }
 
 type MyStorage interface {
@@ -54,14 +54,14 @@ func rowsToStruct(rows *sql.Rows) ([]manyarmedbandit.BannerStruct, error) {
 
 func rowsToStat(rows *sql.Rows) ([]BannerStatStruct, error) {
 	var myBannerList []BannerStatStruct
-	var id, slot_id, banner_id, soc_group_id int
-	var stat_type, rec_date string
+	var id, slotID, bannerID, socGroupID int
+	var statType, recDate string
 	defer rows.Close()
 	for rows.Next() {
-		if err := rows.Scan(&id, &slot_id, &banner_id, &soc_group_id, &stat_type, &rec_date); err != nil {
+		if err := rows.Scan(&id, &slotID, &bannerID, &socGroupID, &statType, &recDate); err != nil {
 			return nil, err
 		}
-		myBannerList = append(myBannerList, BannerStatStruct{id, slot_id, banner_id, soc_group_id, stat_type, rec_date})
+		myBannerList = append(myBannerList, BannerStatStruct{id, slotID, bannerID, socGroupID, statType, recDate})
 	}
 	return myBannerList, nil
 }
@@ -169,12 +169,12 @@ func (s *Storage) GetBannerStat() ([]BannerStatStruct, error) {
 	return myBannerStatList, nil
 }
 
-func (s *Storage) ChangeSendStatID(ID int) error {
+func (s *Storage) ChangeSendStatID(id int) error {
 	query := `
 			update send_stat_max_id
 			set banner_stat_id = $1
 		`
-	_, err := s.DBConnect.ExecContext(s.Ctx, query, ID)
+	_, err := s.DBConnect.ExecContext(s.Ctx, query, id)
 	return err
 }
 
