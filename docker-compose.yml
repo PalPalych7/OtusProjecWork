@@ -29,3 +29,8 @@ services:
     image: banner_rotation:develop    
 #    networks:
 #      - postgres
+  
+  statSender:
+    container_name: banner_stat_sender_container
+    image: banner_stat_sender:develop    
+
