@@ -1,8 +1,9 @@
 version: '3.9'
 
 services:
-  postgres:
+  postgres_db:
     container_name: postgres_container
+    restart: always
     image: postgres:13.3    
     environment:
       POSTGRES_DB: postgres
@@ -13,24 +14,29 @@ services:
       - ./migrations:/docker-entrypoint-initdb.d
 #      - .:/var/lib/postgresql/data
     ports:
-      - 5432:5432
-      
-#    networks:
-#      - postgres
+      - 5432:5432      
+  
   rabbitmq:
     container_name: rabbitmq_container
-    image: 'rabbitmq:3.6-management-alpine'
+    restart: always
+    image: rabbitmq:3.6-management-alpine
     ports:
       - 15672:15672
       - 5672:5672
   
   mainSevice:
     container_name: banner_rotation_container
+    restart: always
     image: banner_rotation:develop    
-#    networks:
-#      - postgres
+    depends_on:
+      - postgres_db   
+    ports:
+      - 5000:5000 
   
   statSender:
     container_name: banner_stat_sender_container
+    restart: always
     image: banner_stat_sender:develop    
-
+    depends_on:
+      - rabbitmq
+      - postgres_db         

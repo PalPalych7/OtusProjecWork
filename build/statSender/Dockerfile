@@ -1,5 +1,5 @@
 # Собираем в гошке
-FROM golang:1.16.2 as build
+FROM golang:1.19 as build
 
 ENV BIN_FILE /opt/banner_stat_sender/banner_stat_sender-app
 ENV CODE_DIR /go/src/
@@ -27,10 +27,12 @@ LABEL ORGANIZATION="PalPalych"
 LABEL SERVICE="banner_stat_sender"
 LABEL MAINTAINERS="PalPalych@bk.ru"
 
-ENV BIN_FILE "/opt/banner_rotation/banner_rotation-app"
+ENV BIN_FILE "/opt/banner_stat_sender/banner_stat_sender-app"
 COPY --from=build ${BIN_FILE} ${BIN_FILE}
 
 ENV CONFIG_FILE /etc/banner_stat_sender/banner_stat_sender-app/config.toml
 COPY ./configs/statSenderConfig.toml ${CONFIG_FILE}
 
 CMD ${BIN_FILE} -config ${CONFIG_FILE}
+
+

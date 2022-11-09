@@ -32,22 +32,27 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
-	fmt.Println("start contct")
-	storage := sqlstorage.New(ctx, config.DB.DBName, config.DB.DBUserName, config.DB.DBPassward, nil)
+	fmt.Println("start storage")
+	storage := sqlstorage.New(ctx, config.DB, nil)
 	logg.Info("Connected to storage:", storage)
-	fmt.Println("Connected to storage:", config.DB, storage)
+	fmt.Println("try connect to storage:", config.DB, storage)
 	err := storage.Connect()
-	fmt.Println("Connected result:", err)
+	fmt.Println("Connect result:", err)
 	if err != nil {
+		fmt.Println("i whant sleep")
 		logg.Fatal(err.Error())
 	}
 	defer storage.Close()
 
+	fmt.Println("Start Connected to Rabbit:")
 	myRQ, err := rabbitmq.CreateQueue(ctx, config.Rabbit)
+	fmt.Println("Result Connected to Rabbit:", err)
 	if err != nil {
+		time.Sleep(time.Minute * 3)
 		logg.Fatal(err.Error())
 	}
 	defer myRQ.Shutdown()
+
 	logg.Info("Connected to Rabit! - ", myRQ)
 	go func() {
 		for {

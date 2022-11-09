@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/PalPalych7/OtusProjectWork/internal/logger"
 	manyarmedbandit "github.com/PalPalych7/OtusProjectWork/internal/manyArmedBandit"
@@ -34,9 +35,11 @@ func main() {
 	myBandid := manyarmedbandit.New(config.Bandit)
 	logg.Info("myBandid=", myBandid)
 
-	storage := sqlstorage.New(ctx, config.DB.DBName, config.DB.DBUserName, config.DB.DBPassward, myBandid)
+	storage := sqlstorage.New(ctx, config.DB, myBandid)
 	logg.Info("Get new storage:", storage)
 	if err := storage.Connect(); err != nil {
+		fmt.Println("ошибка конекта к БД", err)
+		time.Sleep(time.Minute * 3)
 		logg.Fatal(err.Error())
 	}
 	defer storage.Close()

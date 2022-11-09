@@ -1,6 +1,3 @@
-//go:build integration || ignore || (тест && ignore) || только || при || поднятой || базе || и || запущенном || основном || сервисе
-// +build integration ignore тест,ignore только при поднятой базе и запущенном основном сервисе
-
 package internalhttp
 
 import (
@@ -21,7 +18,8 @@ func TestHTTP(t *testing.T) {
 		client := http.Client{
 			Timeout: time.Second * 5,
 		}
-		myHTTP := "http://127.0.0.2:5000/"
+		//myHTTP := "http://127.0.0.1:5000/"
+		myHTTP := "http://localhost:5000/"
 		ctx := context.Background()
 
 		// добавление баннера к слоту

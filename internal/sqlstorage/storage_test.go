@@ -1,6 +1,3 @@
-//go:build integration || ignore || (тест && ignore) || только || при || поднятой || БД
-// +build integration ignore тест,ignore только при поднятой БД
-
 package sqlstorage
 
 import (
@@ -15,7 +12,7 @@ import (
 func TestStorage(t *testing.T) {
 	t.Run("main", func(t *testing.T) {
 		myBandit := manyarmedbandit.New(manyarmedbandit.BanditConfig{500, 500, 10})
-		storage := New(context.Background(), "otusfinalproj", "testuser", "123456", myBandit)
+		storage := New(context.Background(), DBConf{"localhost", "5432", "otusfinalproj", "testuser", "123456"}, myBandit)
 
 		// DB connect
 		err := storage.Connect()

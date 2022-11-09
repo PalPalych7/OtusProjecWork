@@ -38,11 +38,8 @@ run-img_ss: build-img_ss
 	docker run $(DOCKER_IMG_SS)
 
 
-build-compose:
+build-compose: build-img build-img_ss 
 	docker-compose build
-
-run-compose: build-compose
-	docker-compose up -d --build
 
 test:
 	go test -race -count 100 ./internal/... 
