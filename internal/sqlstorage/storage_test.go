@@ -1,3 +1,6 @@
+//go:build integration || ignore
+// +build integration ignore
+
 package sqlstorage
 
 import (
@@ -18,10 +21,10 @@ func TestStorage(t *testing.T) {
 		err := storage.Connect()
 		require.NoError(t, err)
 
-		bammerId, err := storage.GetBannerForSlot(1, 1)
+		bannerID, err := storage.GetBannerForSlot(1, 1)
 		require.NoError(t, err)
-		require.Greater(t, bammerId, 0)
-		fmt.Println(bammerId)
+		require.Greater(t, bannerID, 0)
+		fmt.Println(bannerID)
 
 		err2 := storage.AddBannerSlot(2, 2)
 		require.NoError(t, err2)

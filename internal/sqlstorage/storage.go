@@ -82,7 +82,7 @@ func (s *Storage) Connect() error {
 	var err error
 	//	myStr := "user=" + s.DBUserName + " dbname=" + s.DBName + " password=" + s.DBPassword + " sslmode=disable"
 	//	myStr := "postgres://" + s.DBUserName + ":" + s.DBPassword + "@" + "postgres:5432/" + s.DBName + "?sslmode=disable"
-	myStr := "postgres://" + s.DBConf.DBUserName + ":" + s.DBConf.DBPassward + "@" + s.DBConf.DBHost + ":" + s.DBConf.DBPort + "/" + s.DBConf.DBName + "?sslmode=disable"
+	myStr := "postgres://" + s.DBConf.DBUserName + ":" + s.DBConf.DBPassward + "@" + s.DBConf.DBHost + ":" + s.DBConf.DBPort + "/" + s.DBConf.DBName + "?sslmode=disable" //nolint
 	fmt.Println("start connect to postgrace:", myStr)
 	s.DBConnect, err = sql.Open("postgres", myStr)
 	fmt.Println("result: s.DBConnect:", err)

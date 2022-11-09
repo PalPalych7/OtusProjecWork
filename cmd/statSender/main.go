@@ -39,7 +39,6 @@ func main() {
 	err := storage.Connect()
 	fmt.Println("Connect result:", err)
 	if err != nil {
-		fmt.Println("i whant sleep")
 		logg.Fatal(err.Error())
 	}
 	defer storage.Close()

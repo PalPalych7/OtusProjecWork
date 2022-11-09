@@ -44,7 +44,7 @@ func main() {
 	}
 	defer storage.Close()
 
-	server := internalhttp.NewServer(ctx, storage, config.HTTP.Host+":"+config.HTTP.Port, logg)
+	server := internalhttp.NewServer(ctx, storage /*config.HTTP.Host+*/, ":"+config.HTTP.Port, logg)
 	defer server.Stop()
 
 	go func() {
