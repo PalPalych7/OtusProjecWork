@@ -10,13 +10,19 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type Storage struct {
+type DBConf struct {
+	DBHost     string
+	DBPort     string
 	DBName     string
 	DBUserName string
-	DBPassword string
-	DBConnect  *sql.DB
-	Ctx        context.Context
-	MyBandit   manyarmedbandit.MyBandit
+	DBPassward string
+}
+
+type Storage struct {
+	DBConf    DBConf
+	DBConnect *sql.DB
+	Ctx       context.Context
+	MyBandit  manyarmedbandit.MyBandit
 }
 
 type BannerStatStruct struct {
@@ -66,19 +72,24 @@ func rowsToStat(rows *sql.Rows) ([]BannerStatStruct, error) {
 	return myBannerList, nil
 }
 
-func New(ctx context.Context, dbName, dbUserName, dbPassword string, myBandit manyarmedbandit.MyBandit) MyStorage {
+func New(ctx context.Context, myDBConf DBConf, myBandit manyarmedbandit.MyBandit) MyStorage {
 	return &Storage{
-		DBName: dbName, DBUserName: dbUserName, DBPassword: dbPassword, Ctx: ctx, MyBandit: myBandit,
+		DBConf: myDBConf, Ctx: ctx, MyBandit: myBandit,
 	}
 }
 
 func (s *Storage) Connect() error {
 	var err error
-	myStr := "user=" + s.DBUserName + " dbname=" + s.DBName + " password=" + s.DBPassword + " sslmode=disable"
+	//	myStr := "user=" + s.DBUserName + " dbname=" + s.DBName + " password=" + s.DBPassword + " sslmode=disable"
+	//	myStr := "postgres://" + s.DBUserName + ":" + s.DBPassword + "@" + "postgres:5432/" + s.DBName + "?sslmode=disable"
+	myStr := "postgres://" + s.DBConf.DBUserName + ":" + s.DBConf.DBPassward + "@" + s.DBConf.DBHost + ":" + s.DBConf.DBPort + "/" + s.DBConf.DBName + "?sslmode=disable" //nolint
+	fmt.Println("start connect to postgrace:", myStr)
 	s.DBConnect, err = sql.Open("postgres", myStr)
+	fmt.Println("result: s.DBConnect:", err)
 	if err == nil {
 		err = s.DBConnect.PingContext(s.Ctx)
 	}
+	fmt.Println("ping_result:", err)
 	return err
 }
 

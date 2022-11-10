@@ -5,6 +5,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	manyarmedbandit "github.com/PalPalych7/OtusProjectWork/internal/manyArmedBandit"
+	"github.com/PalPalych7/OtusProjectWork/internal/sqlstorage"
 )
 
 type LoggerConf struct {
@@ -17,16 +18,10 @@ type HTTPConf struct {
 	Port string
 }
 
-type DBConf struct {
-	DBName     string
-	DBUserName string
-	DBPassward string
-}
-
 type Config struct {
 	Logger LoggerConf
 	HTTP   HTTPConf
-	DB     DBConf
+	DB     sqlstorage.DBConf
 	Bandit manyarmedbandit.BanditConfig
 }
 

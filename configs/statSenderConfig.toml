@@ -3,12 +3,14 @@ Level="TRACE"
 LogFile="../statSender.log"
 
 [DB]
+DbHost="postgres_db" 
+DbPort="5432"
 DbName="otusfinalproj" 
 DbUserName="testuser" 
 DbPassward="123456"
 
 [Rabbit]
-uri="amqp://guest:guest@localhost:5672/"
+uri="amqp://guest:guest@rabbitmq:5672/"
 exchange="statSender"
 exchangeType="direct"
 queue="queue1"

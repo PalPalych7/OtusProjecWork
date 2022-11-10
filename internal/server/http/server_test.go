@@ -1,5 +1,5 @@
-//go:build integration || ignore || (тест && ignore) || только || при || поднятой || базе || и || запущенном || основном || сервисе
-// +build integration ignore тест,ignore только при поднятой базе и запущенном основном сервисе
+//go:build integration || ignore
+// +build integration ignore
 
 package internalhttp
 
@@ -21,7 +21,7 @@ func TestHTTP(t *testing.T) {
 		client := http.Client{
 			Timeout: time.Second * 5,
 		}
-		myHTTP := "http://127.0.0.2:5000/"
+		myHTTP := "http://127.0.0.1:5000/"
 		ctx := context.Background()
 
 		// добавление баннера к слоту
@@ -65,13 +65,12 @@ func TestHTTP(t *testing.T) {
 		bodyBytes, errrr := ioutil.ReadAll(resp.Body)
 		fmt.Println(bodyBytes, errrr)
 		require.NoError(t, errrr)
-		var bannerId int
-		errUnm := json.Unmarshal(bodyBytes, &bannerId)
-		fmt.Println(errUnm, bannerId)
+		var bannerID int
+		errUnm := json.Unmarshal(bodyBytes, &bannerID)
 		require.NoError(t, errUnm)
 
 		// увеличить счётчик
-		reqBody3 := ForBannerClick{1, bannerId, 1}
+		reqBody3 := ForBannerClick{1, bannerID, 1}
 		fmt.Println("reqBody=", reqBody3)
 		bodyRaw3, errM3 := json.Marshal(reqBody3)
 		require.NoError(t, errM3)
@@ -80,6 +79,5 @@ func TestHTTP(t *testing.T) {
 		resp3, errResp3 := client.Do(req3) //nolint
 		require.NoError(t, errResp3)
 		fmt.Println(resp3, errResp3)
-
 	})
 }

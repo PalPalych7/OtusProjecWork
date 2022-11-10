@@ -5,6 +5,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	rabbitmq "github.com/PalPalych7/OtusProjectWork/internal/rabbitMQ"
+	"github.com/PalPalych7/OtusProjectWork/internal/sqlstorage"
 )
 
 type LoggerConf struct {
@@ -12,16 +13,10 @@ type LoggerConf struct {
 	Level   string
 }
 
-type DBConf struct {
-	DBName     string
-	DBUserName string
-	DBPassward string
-}
-
 type Config struct {
 	Logger LoggerConf
 	Rabbit rabbitmq.RabbitCFG
-	DB     DBConf
+	DB     sqlstorage.DBConf
 }
 
 func NewConfig(configFile string) Config {
