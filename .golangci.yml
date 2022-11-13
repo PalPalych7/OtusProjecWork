@@ -10,7 +10,6 @@ linters:
   disable-all: true
   enable:
     - asciicheck
-    - bodyclose
     - deadcode
     - depguard
     - dogsled
@@ -44,7 +43,6 @@ linters:
     - nestif
     - nilerr
     - noctx
-#    - nolintlint
     - prealloc
     - predeclared
     - revive

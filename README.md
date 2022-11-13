@@ -144,3 +144,7 @@
     Понятность и чистота кода - до 3 баллов.
 
 Зачёт от 10 баллов
+
+
+//go:build integration
+// +build integration

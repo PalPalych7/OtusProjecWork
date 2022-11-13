@@ -55,29 +55,29 @@ func main() {
 	logg.Info("Connected to Rabit! - ", myRQ)
 	go func() {
 		for {
-			logg.Info("Проснулись.")
+			logg.Info("I not sleep :).")
 			// отправка оповещений
 			myStatList, err2 := storage.GetBannerStat()
 			countRec := len(myStatList)
 			if err2 != nil { //nolint
-				logg.Error("ошибка получения статистики-", err2)
+				logg.Error("Error in GetBannerStat", err2)
 			} else if countRec == 0 {
-				logg.Info("Данных для отправки не найдено")
+				logg.Info("Nothing found for sending")
 			} else {
-				logg.Info("Найдено ", countRec, "записей для отправки")
+				logg.Info("Found ", countRec, "record for sending")
 				myMess, errMarsh := json.Marshal(myStatList)
 				if errMarsh != nil {
-					logg.Error("ошибка json.Marshal", errMarsh)
+					logg.Error("json.Marshal error", errMarsh)
 				}
 				if erSemdMess := myRQ.SendMess(myMess); erSemdMess != nil {
-					logg.Error("ошибка отправки сообщения-", errMarsh)
+					logg.Error("Send mesage error", errMarsh)
 				} else {
-					logg.Info("сообщение успешно отпралвено")
+					logg.Info("message was succcessful send")
 				}
 				myStatID := myStatList[countRec-1].ID
 				logg.Info("max_stat_id=", myStatID)
 				if errChID := storage.ChangeSendStatID(myStatID); errChID != nil {
-					logg.Error("ошибка обновления max ID отправки -", errMarsh)
+					logg.Error("error in update max send ID -", errMarsh)
 				}
 			}
 			time.Sleep(time.Minute * 5)
