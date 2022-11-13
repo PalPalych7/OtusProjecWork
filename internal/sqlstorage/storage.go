@@ -80,7 +80,6 @@ func New(ctx context.Context, myDBConf DBConf, myBandit manyarmedbandit.MyBandit
 
 func (s *Storage) Connect() error {
 	var err error
-	//	myStr := "user=" + s.DBUserName + " dbname=" + s.DBName + " password=" + s.DBPassword + " sslmode=disable"
 	//	myStr := "postgres://" + s.DBUserName + ":" + s.DBPassword + "@" + "postgres:5432/" + s.DBName + "?sslmode=disable"
 	myStr := "postgres://" + s.DBConf.DBUserName + ":" + s.DBConf.DBPassward + "@" + s.DBConf.DBHost + ":" + s.DBConf.DBPort + "/" + s.DBConf.DBName + "?sslmode=disable" //nolint
 	fmt.Println("start connect to postgrace:", myStr)
@@ -150,6 +149,10 @@ func (s *Storage) GetBannerForSlot(slotID int, socGroupID int) (int, error) {
 	myBannerList, errStruct := rowsToStruct(myStat)
 	if errStruct != nil {
 		return 0, errStruct
+	}
+	fmt.Println(myBannerList)
+	if len(myBannerList) == 0 {
+		return 0, nil
 	}
 
 	arrNum := s.MyBandit.GetBannerNum(myBannerList)

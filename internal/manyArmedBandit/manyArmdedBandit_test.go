@@ -19,22 +19,22 @@ func isClick(myRandProc int) int {
 	return res
 }
 
-func TestLogger(t *testing.T) {
+func TestMABandit(t *testing.T) {
 	var myArStruct []BannerStruct
 	var myRandProc []int // сгенерированная вероятность кликоа на баннер
 	genCount := 50000    // количество запросов
 	bannerCount := 50    // кол-во баннеров
+
 	rand.Seed(time.Now().UTC().UnixNano())
 	var minProc float32 = 100
 	var maxProc float32
 
-	myBandit := New(BanditConfig{500, 500, 10})
+	myBandit := New(BanditConfig{250, 500, 10})
 
 	for i := 1; i <= bannerCount; i++ { // генерим вероятность клика для каждого баннера
 		myArStruct = append(myArStruct, BannerStruct{i, 0, 0})
 		myRandProc = append(myRandProc, rand.Intn(101)) //nolint
 	}
-
 	for i := 1; i <= genCount; i++ { // вызов метода заданное кол-во раз
 		curNum := myBandit.GetBannerNum(myArStruct)
 		myArStruct[curNum].ShowCount++
@@ -42,7 +42,7 @@ func TestLogger(t *testing.T) {
 			myArStruct[curNum].ClickCount++ // увеличение счётчмка кликов
 		}
 	}
-
+	fmt.Println("myArStruct=", myArStruct)
 	for i := 0; i < bannerCount; i++ { // определение процента показа для самого популярного и самого редкого баннера
 		if float32(myArStruct[i].ShowCount)/float32(genCount)*100 > maxProc {
 			maxProc = float32(myArStruct[i].ShowCount) / float32(genCount) * 100

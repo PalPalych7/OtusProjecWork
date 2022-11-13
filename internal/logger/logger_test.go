@@ -35,6 +35,7 @@ func TestLogger(t *testing.T) {
 	q2 := New(fileName, "ERROR")
 	q2.Trace("trace")      // не должен напечатать
 	q2.Info("informatuom") // не должен
+	q.Warning("Warning")   // не должен
 	q2.Error("er")         // должен
 	file, err = os.Open(fileName)
 	require.NoError(t, err)

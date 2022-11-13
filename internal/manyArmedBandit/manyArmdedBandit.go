@@ -32,7 +32,11 @@ func kvadrProc(arrStruct []BannerStruct) int {
 	var curKvProc float64
 	var sumKvProc float64
 	for _, v := range arrStruct {
-		curKvProc = math.Pow(float64(v.ClickCount)/float64(v.ShowCount)*100, 2)
+		if v.ShowCount > 0 {
+			curKvProc = math.Pow(float64(v.ClickCount)/float64(v.ShowCount)*100, 2)
+		} else {
+			curKvProc = 0
+		}
 		sumKvProc += curKvProc
 		arrSumKvProc = append(arrSumKvProc, sumKvProc)
 	}

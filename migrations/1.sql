@@ -78,18 +78,6 @@ insert into slot (descr) values ('slot 8') ;
 insert into slot (descr) values ('slot 9') ;
 insert into slot (descr) values ('slot 10') ;
 
-insert into slot_banner(slot_id,  banner_id) values (1,1);
-insert into slot_banner(slot_id,  banner_id) values (1,2);
-insert into slot_banner(slot_id,  banner_id) values (1,3);
-insert into slot_banner(slot_id,  banner_id) values (1,4);
-insert into slot_banner(slot_id,  banner_id) values (1,5);
-insert into slot_banner(slot_id,  banner_id) values (1,6);
-insert into slot_banner(slot_id,  banner_id) values (1,7);
-insert into slot_banner(slot_id,  banner_id) values (1,8);
-insert into slot_banner(slot_id,  banner_id) values (1,9);
-insert into slot_banner(slot_id,  banner_id) values (1,10);
-
-
 insert into soc_group (descr) values ('Мальчики');
 insert into soc_group (descr) values ('Мужчины до 30') ;
 insert into soc_group (descr) values ('Мужчины до 30-45') ;
@@ -100,3 +88,5 @@ insert into soc_group (descr) values ('Женщины до 30') ;
 insert into soc_group (descr) values ('Женщины до 30-45') ;
 insert into soc_group (descr) values ('Женщины до 46-60') ;
 insert into soc_group (descr) values ('Женщины старше 60') ;
+
+insert into send_stat_max_id values (0);
