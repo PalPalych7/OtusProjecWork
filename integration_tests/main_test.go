@@ -55,6 +55,7 @@ func (s *mySuite) CheckCountRec(myQueryText string, expCount int) {
 	defer mySQLRows.Close()
 	mySQLRows.Next()
 	err = mySQLRows.Scan(&countRec)
+	fmt.Println("countRec=", countRec)
 	s.Require().NoError(err)
 	s.Require().Equal(expCount, countRec)
 }
@@ -65,8 +66,7 @@ func (s *mySuite) SetupSuite() {
 		Timeout: time.Second * 5,
 	}
 
-	//	s.hostName = "http://127.0.0.1:5000/"
-	s.hostName = "http://localhost:5000/"
+	s.hostName = "http://:5000/"
 	s.ctx = context.Background()
 	//	myStr := "postgres://testuser:123456@postgres_db:5432/otusfinalproj?sslmode=disable"
 
@@ -78,6 +78,8 @@ func (s *mySuite) SetupSuite() {
 		err = s.DBConnect.PingContext(s.ctx)
 	}
 	s.Require().NoError(err)
+
+	s.CheckCountRec("select count(*) RC from banner", 20)
 	_, err = s.DBConnect.ExecContext(s.ctx, "delete from slot_banner")
 	s.Require().NoError(err)
 	s.CheckCountRec("select count(*) RC from slot_banner", 0)

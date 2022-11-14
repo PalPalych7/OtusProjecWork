@@ -10,7 +10,7 @@ DbUserName="testuser"
 DbPassward="123456"
 
 [Http]
-Host="127.0.0.1"
+Host="localhost"
 Port="5000"
 
 [Bandit]
