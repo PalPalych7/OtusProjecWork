@@ -65,7 +65,8 @@ func (s *mySuite) SetupSuite() {
 		Timeout: time.Second * 5,
 	}
 
-	s.hostName = "http://127.0.0.1:5000/"
+	//	s.hostName = "http://127.0.0.1:5000/"
+	s.hostName = "http://localhost:5000/"
 	s.ctx = context.Background()
 	//	myStr := "postgres://testuser:123456@postgres_db:5432/otusfinalproj?sslmode=disable"
 
@@ -84,6 +85,7 @@ func (s *mySuite) SetupSuite() {
 	_, err = s.DBConnect.ExecContext(s.ctx, "delete from banner_stat")
 	s.Require().NoError(err)
 	s.CheckCountRec("select count(*) RC from banner_stat", 0)
+	fmt.Println("finish setup suit")
 }
 
 func (s *mySuite) TearDownSuite() {
@@ -91,6 +93,7 @@ func (s *mySuite) TearDownSuite() {
 	_, err = s.DBConnect.ExecContext(s.ctx, "delete from slot_banner;delete from banner_stat;")
 	s.Require().NoError(err)
 	s.DBConnect.Close()
+	fmt.Println("finish TearDownSuite")
 }
 
 func (s *mySuite) SendRequest(myMethodName string, myStruct interface{}) []byte {
@@ -110,19 +113,16 @@ func (s *mySuite) SendRequest(myMethodName string, myStruct interface{}) []byte 
 
 func (s *mySuite) AddSlotBanner(mySlotBanner SlotBanner) {
 	// добавление баннера к слоту
-	fmt.Println("start AddSlotBanner", mySlotBanner)
 	bodyRaw = s.SendRequest("AddBannerSlot", mySlotBanner)
 	s.Require().Empty(bodyRaw)
 }
 
 func (s *mySuite) DelSlotBanner(mySlotBanner SlotBanner) { // удалени баннера из слота
-	fmt.Println("start DelSlotBanner", mySlotBanner)
 	bodyRaw = s.SendRequest("DelBannerSlot", mySlotBanner)
 	s.Require().Empty(bodyRaw)
 }
 
 func (s *mySuite) GetBannerForSlot(mySlotSoc ForGetBanner) int { // получения баннера для показа в слоте
-	fmt.Println("start GetBannerForSlot", mySlotSoc)
 	bodyRaw = s.SendRequest("GetBannerForSlot", mySlotSoc)
 	s.Require().NotEmpty(bodyRaw)
 	err = json.Unmarshal(bodyRaw, &bannerID)
@@ -136,7 +136,7 @@ func (s *mySuite) BannerClick(myBannerClick ForBannerClick) { // кликg по 
 }
 
 func (s *mySuite) Test1AddBanner() {
-	fmt.Println("statrt test1")
+	fmt.Println("statrt Test1AddBanner")
 	for i := 1; i <= 10; i++ {
 		s.AddSlotBanner(SlotBanner{1, i})
 	}
@@ -147,7 +147,7 @@ func (s *mySuite) Test1AddBanner() {
 	s.AddSlotBanner(SlotBanner{1, 1})
 	// после повторной попытке ничего не изменилось
 	s.CheckCountRec("select count(*) RC from slot_banner where slot_id=1 and banner_id=1", 1)
-	fmt.Println("finish test1")
+	fmt.Println("finish Test1AddBanner")
 }
 
 func (s *mySuite) Test2DelBanner() {
@@ -160,6 +160,7 @@ func (s *mySuite) Test2DelBanner() {
 	s.DelSlotBanner(SlotBanner{2, 2})
 	// убедимся что отвязался
 	s.CheckCountRec("select count(*) RC from slot_banner where slot_id=2 and banner_id=2", 0)
+	fmt.Println("finish TestDelSlotBanner")
 }
 
 func (s *mySuite) Test3GetBannerForSlot() {
@@ -177,6 +178,7 @@ func (s *mySuite) Test3GetBannerForSlot() {
 	s.Require().Equal(3, bannerID)
 	// убедимся что этот показ отразился в статистике (1 раз)
 	s.CheckCountRec("select count(*) RC from banner_stat where stat_type='S' and slot_id=2 and banner_id=3", 1)
+	fmt.Println("finish Test3GetBanner")
 }
 
 func (s *mySuite) Test4BannerClick() {
@@ -198,6 +200,7 @@ func (s *mySuite) Test4BannerClick() {
 					 	and slot_id=1 
 						and banner_id=2 
 						and soc_group_id=3`, 1)
+	fmt.Println("finish Test4BannerClick")
 }
 
 func TestService(t *testing.T) {
