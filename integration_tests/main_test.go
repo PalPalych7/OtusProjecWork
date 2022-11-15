@@ -62,7 +62,7 @@ func (s *mySuite) CheckCountRec(myQueryText string, expCount int) {
 
 func (s *mySuite) SetupSuite() {
 	fmt.Println("start setup suit")
-	time.Sleep(time.Second * 1)
+	time.Sleep(time.Second * 5)
 	s.client = http.Client{
 		Timeout: time.Second * 5,
 	}
