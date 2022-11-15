@@ -62,15 +62,16 @@ func (s *mySuite) CheckCountRec(myQueryText string, expCount int) {
 
 func (s *mySuite) SetupSuite() {
 	fmt.Println("start setup suit")
+	time.Sleep(time.Second * 1)
 	s.client = http.Client{
 		Timeout: time.Second * 5,
 	}
 
-	s.hostName = "http://:5000/"
+	s.hostName = "http://localhost:5000/"
 	s.ctx = context.Background()
-	//	myStr := "postgres://testuser:123456@postgres_db:5432/otusfinalproj?sslmode=disable"
+	//	myStr := "postgres://testuser:123456@postgres_db:5432/otusfinalproj?sslmode=disable" // через докер
+	myStr := "postgres://testuser:123456@localhost:5432/otusfinalproj?sslmode=disable" // локально
 
-	myStr := "postgres://testuser:123456@localhost:5432/otusfinalproj?sslmode=disable"
 	fmt.Println("start connect to postgrace:", myStr)
 	s.DBConnect, err = sql.Open("postgres", myStr)
 	fmt.Println("result: s.DBConnect:", err)
