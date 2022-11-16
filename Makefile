@@ -47,7 +47,7 @@ run-img_int_test: build-img_int_tests
 	docker run $(DOCKER_IMG_INT_TESTS)
 
 
-build-compose: build-img build-img_ss build-img_int_tests 
+build-compose: build-img build-img_ss build-img_int_tests
 	docker-compose build
 
 test:
@@ -69,6 +69,6 @@ down:
 	docker-compose down
 
 integration_tests: run_compose
-	docker-compose up integraton_tests
+	docker-compose up integraton_test
 
 .PHONY: build run build-img run-img test lint

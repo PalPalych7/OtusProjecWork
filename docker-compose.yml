@@ -41,8 +41,8 @@ services:
       - rabbitmq
       - postgres_db         
 
-  integraton_tests:
-    container_name: integration_tests_container
-    image: integration_tests:develop    
+  integraton_test:
+    container_name: integration_test_containe
+    image: integration_test:develop    
     depends_on:
       - mainSevice   
