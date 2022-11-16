@@ -2,7 +2,7 @@ BIN := "./bin/mainService"
 BIN_SS := "./bin/statSender"
 DOCKER_IMG="banner_rotation:develop"
 DOCKER_IMG_SS="banner_stat_sender:develop"
-DOCKER_IMG_INT_TESTS="integration_tests:develop"
+DOCKER_IMG_INT_TESTS="integration_test:develop"
 
 GIT_HASH := $(shell git log --format="%h" -n 1)
 LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X main.gitHash=$(GIT_HASH)
@@ -43,11 +43,11 @@ run-img: build-img
 runrun-img_ss: build-img_ss
 	docker run $(DOCKER_IMG_SS)
 
-run-img_int_tests: build-img_int_tests
+run-img_int_test: build-img_int_tests
 	docker run $(DOCKER_IMG_INT_TESTS)
 
 
-build-compose: build-img build-img_ss 
+build-compose: build-img build-img_ss build-img_int_tests 
 	docker-compose build
 
 test:
@@ -68,8 +68,7 @@ up: build-compose
 down:
 	docker-compose down
 
-integration_test: up
+integration_tests: up
 	docker-compose up integraton_tests
-#	go test -tags integration ./integration_tests/...
 
 .PHONY: build run build-img run-img test lint
