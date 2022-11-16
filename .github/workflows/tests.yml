@@ -61,8 +61,6 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v3
-      - name: run_compose
-        run: make run
       - name: integration_test
         run: make integration_test
       - name: stop servce
