@@ -59,7 +59,7 @@ install-lint-deps:
 lint: install-lint-deps
 	CGO_ENABLED=0 golangci-lint run ./... --config=./.golangci.yml
 
-upp: build-compose
+run_compose: build-compose
 	docker-compose up -d postgres_db
 	docker-compose up -d rabbitmq
 	docker-compose up -d mainSevice
@@ -68,7 +68,7 @@ upp: build-compose
 down:
 	docker-compose down
 
-integration_tests: upp
+integration_tests: run_compose
 	docker-compose up integraton_tests
 
 .PHONY: build run build-img run-img test lint
