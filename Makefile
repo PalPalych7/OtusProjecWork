@@ -7,10 +7,10 @@ DOCKER_IMG_INT_TESTS="integration_tests:develop"
 GIT_HASH := $(shell git log --format="%h" -n 1)
 LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X main.gitHash=$(GIT_HASH)
 
-build:
+build_main_service:
 	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/mainService
 
-run: build
+run_main_service: build_main_service
 	$(BIN) -config ./configs/config.toml
 
 build_ss:
@@ -47,14 +47,11 @@ run-img_int_tests: build-img_int_tests
 	docker run $(DOCKER_IMG_INT_TESTS)
 
 
-build-compose: build-img build-img_ss 
+build: build-img build-img_ss 
 	docker-compose build
 
 test:
 	go test -race -count 100 ./internal/... 
-
-integration_test:
-	go test -tags integration ./integration_tests/...
 
 install-lint-deps:
 	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.46.2
@@ -62,10 +59,20 @@ install-lint-deps:
 lint: install-lint-deps
 	CGO_ENABLED=0 golangci-lint run ./... --config=./.golangci.yml
 
-up: build-compose
-	docker-compose up -d --build
+up: build
+	docker-compose up -d postgres_db
+	docker-compose up -d rabbitmq
+	docker-compose up -d mainSevice
+	docker-compose up -d statSender
 
 down:
 	docker-compose down
+
+run: up
+
+integration_test:
+	docker-compose up integraton_tests
+#	go test -tags integration ./integration_tests/...
+
 
 .PHONY: build run build-img run-img test lint
