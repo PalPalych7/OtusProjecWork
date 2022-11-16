@@ -40,3 +40,9 @@ services:
     depends_on:
       - rabbitmq
       - postgres_db         
+
+  integraton_test:
+    container_name: integration_test_containe
+    image: integration_test:develop    
+    depends_on:
+      - mainSevice   
