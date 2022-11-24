@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"os/signal"
 	"syscall"
 	"time"
@@ -22,32 +21,21 @@ func init() {
 
 func main() {
 	flag.Parse()
-	fmt.Println(flag.Args(), configFile)
 	config := NewConfig(configFile)
-	fmt.Println("config=", config)
 	logg := logger.New(config.Logger.LogFile, config.Logger.Level)
-	fmt.Println(config.Logger.Level)
-	fmt.Println("logg=", logg)
 	logg.Info("Start!")
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
-	fmt.Println("start storage")
 	storage := sqlstorage.New(ctx, config.DB, nil)
 	logg.Info("Connected to storage:", storage)
-	fmt.Println("try connect to storage:", config.DB, storage)
-	err := storage.Connect()
-	fmt.Println("Connect result:", err)
-	if err != nil {
+	if err := storage.Connect(); err != nil {
 		logg.Fatal(err.Error())
 	}
 	defer storage.Close()
-
-	fmt.Println("Start Connected to Rabbit:")
 	myRQ, err := rabbitmq.CreateQueue(ctx, config.Rabbit)
-	fmt.Println("Result Connected to Rabbit:", err)
 	if err != nil {
-		time.Sleep(time.Minute * 3)
+		time.Sleep(time.Minute * 1)
 		logg.Fatal(err.Error())
 	}
 	defer myRQ.Shutdown()
@@ -59,11 +47,12 @@ func main() {
 			// отправка оповещений
 			myStatList, err2 := storage.GetBannerStat()
 			countRec := len(myStatList)
-			if err2 != nil { //nolint
+			switch {
+			case err2 != nil:
 				logg.Error("Error in GetBannerStat", err2)
-			} else if countRec == 0 {
+			case countRec == 0:
 				logg.Info("Nothing found for sending")
-			} else {
+			default:
 				logg.Info("Found ", countRec, "record for sending")
 				myMess, errMarsh := json.Marshal(myStatList)
 				if errMarsh != nil {
@@ -80,7 +69,7 @@ func main() {
 					logg.Error("error in update max send ID -", errMarsh)
 				}
 			}
-			time.Sleep(time.Minute * 5)
+			time.Sleep(time.Minute * time.Duration(config.Rabbit.SleepMinutes))
 		}
 	}()
 	<-ctx.Done()

@@ -13,7 +13,7 @@ import (
 
 type Server struct {
 	myCtx     context.Context
-	myStorage sqlstorage.MyStorage
+	myStorage myStorage
 	myLogger  myLogger
 	HTTPConf  string
 	myHTTP    http.Server
@@ -24,7 +24,18 @@ type myLogger interface {
 	Error(args ...interface{})
 }
 
-func NewServer(ctx context.Context, app sqlstorage.MyStorage, httpConf string, myLogger myLogger) *Server {
+type myStorage interface {
+	Connect() error
+	AddBannerSlot(slotID int, bannerID int) error
+	DelBannerSlot(slotID int, bannerID int) error
+	BannerClick(slotID int, bannerID int, socGroupID int) error
+	GetBannerForSlot(slotID int, socGroupID int) (int, error)
+	GetBannerStat() ([]sqlstorage.BannerStatStruct, error)
+	ChangeSendStatID(ID int) error
+	Close() error
+}
+
+func NewServer(ctx context.Context, app myStorage, httpConf string, myLogger myLogger) *Server {
 	return &Server{myCtx: ctx, myStorage: app, myLogger: myLogger, HTTPConf: httpConf}
 }
 

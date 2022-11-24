@@ -34,17 +34,6 @@ type BannerStatStruct struct {
 	RecDate    string
 }
 
-type MyStorage interface {
-	Connect() error
-	AddBannerSlot(slotID int, bannerID int) error
-	DelBannerSlot(slotID int, bannerID int) error
-	BannerClick(slotID int, bannerID int, socGroupID int) error
-	GetBannerForSlot(slotID int, socGroupID int) (int, error)
-	GetBannerStat() ([]BannerStatStruct, error)
-	ChangeSendStatID(ID int) error
-	Close() error
-}
-
 func rowsToStruct(rows *sql.Rows) ([]manyarmedbandit.BannerStruct, error) {
 	var myBannerList []manyarmedbandit.BannerStruct
 	var bannerID, ShowCount, ClickCount int
@@ -72,7 +61,7 @@ func rowsToStat(rows *sql.Rows) ([]BannerStatStruct, error) {
 	return myBannerList, nil
 }
 
-func New(ctx context.Context, myDBConf DBConf, myBandit manyarmedbandit.MyBandit) MyStorage {
+func New(ctx context.Context, myDBConf DBConf, myBandit manyarmedbandit.MyBandit) *Storage {
 	return &Storage{
 		DBConf: myDBConf, Ctx: ctx, MyBandit: myBandit,
 	}
