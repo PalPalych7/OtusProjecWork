@@ -18,22 +18,12 @@ type Server struct {
 	myHTTP    http.Server
 }
 
-type MyServer interface {
-	Serve() error
-	Stop() error
-}
-
 type myLogger interface {
-	//	Trace(args ...interface{})
-	//	Debug(args ...interface{})
 	Info(args ...interface{})
-	//	Print(args ...interface{})
-	//	Warning(args ...interface{})
 	Error(args ...interface{})
-	//	Fatal(args ...interface{})
 }
 
-func NewServer(ctx context.Context, app sqlstorage.MyStorage, httpConf string, myLogger myLogger) MyServer {
+func NewServer(ctx context.Context, app sqlstorage.MyStorage, httpConf string, myLogger myLogger) *Server {
 	return &Server{myCtx: ctx, myStorage: app, myLogger: myLogger, HTTPConf: httpConf}
 }
 

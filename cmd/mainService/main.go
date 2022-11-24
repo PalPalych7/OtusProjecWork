@@ -47,7 +47,7 @@ func main() {
 	defer server.Stop()
 
 	go func() {
-		if err := server.Start(); err != nil {
+		if err := server.Serve(); err != nil {
 			logg.Fatal("failed to start http server: " + err.Error())
 		} else {
 			logg.Info("Server was started")
