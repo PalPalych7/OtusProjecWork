@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"os/signal"
 	"syscall"
 	"time"
@@ -16,6 +15,13 @@ import (
 
 var configFile string
 
+type serverInt interface {
+	Serve() error
+	Stop() error
+}
+
+var server serverInt
+
 func init() {
 	flag.StringVar(&configFile, "config", "../../configs/config.toml", "Path to configuration file")
 }
@@ -25,36 +31,29 @@ func main() {
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 	flag.Parse()
-	fmt.Println(flag.Args(), configFile)
 	config := NewConfig(configFile)
-	fmt.Println("config=", config)
 	logg := logger.New(config.Logger.LogFile, config.Logger.Level)
-	fmt.Println(config.Logger.Level)
-	fmt.Println("logg=", logg)
 	logg.Info("Start!")
 	myBandid := manyarmedbandit.New(config.Bandit)
-	logg.Info("myBandid=", myBandid)
 
 	storage := sqlstorage.New(ctx, config.DB, myBandid)
-	logg.Info("Get new storage:", storage)
 	if err := storage.Connect(); err != nil {
-		fmt.Println("ошибка конекта к БД", err)
-		time.Sleep(time.Minute * 3)
+		time.Sleep(time.Minute * 1)
 		logg.Fatal(err.Error())
 	}
 	defer storage.Close()
 
-	server := internalhttp.NewServer(ctx, storage /*config.HTTP.Host+*/, ":"+config.HTTP.Port, logg)
+	server = internalhttp.NewServer(ctx, storage, ":"+config.HTTP.Port, logg)
 	defer server.Stop()
 
 	go func() {
-		fmt.Println("lets startserver!")
 		if err := server.Start(); err != nil {
 			logg.Fatal("failed to start http server: " + err.Error())
+		} else {
+			logg.Info("Server was started")
 		}
 		<-ctx.Done()
 	}()
 	<-ctx.Done()
-	fmt.Println("finish!")
-	logg.Info("finish!")
+	logg.Info("Finish!")
 }
