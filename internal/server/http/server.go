@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"github.com/PalPalych7/OtusProjectWork/internal/sqlstorage"
 )
@@ -27,7 +28,7 @@ func NewServer(ctx context.Context, app sqlstorage.MyStorage, httpConf string, m
 	return &Server{myCtx: ctx, myStorage: app, myLogger: myLogger, HTTPConf: httpConf}
 }
 
-func getBodyRow(reqBody io.ReadCloser) []byte {
+func getBodyRaw(reqBody io.ReadCloser) []byte {
 	raw, err := ioutil.ReadAll(reqBody)
 	if err != nil {
 		return nil
@@ -43,8 +44,19 @@ func (s *Server) Serve() error {
 	mux.HandleFunc("/GetBannerForSlot", s.GetBannerForSlotFunc)
 	mux.HandleFunc("/BannerClick", s.BannerClickFunc)
 	mux.HandleFunc("/DelBannerSlot", s.DelBannerSlotFunc)
-	http.ListenAndServe(s.myHTTP.Addr, s.loggingMiddleware(mux))
-	return nil
+
+	server := &http.Server{
+		Addr:              s.myHTTP.Addr,
+		ReadHeaderTimeout: 3 * time.Second,
+		Handler:           s.loggingMiddleware(mux),
+	}
+
+	err := server.ListenAndServe()
+	//	http.ListenAndServe(s.myHTTP.Addr, s.loggingMiddleware(mux))
+	if err != nil {
+		s.myLogger.Error(err)
+	}
+	return err
 }
 
 func (s *Server) Stop() error {
@@ -54,7 +66,7 @@ func (s *Server) Stop() error {
 
 func (s *Server) AddBannerSlotFunc(rw http.ResponseWriter, req *http.Request) {
 	s.myLogger.Info("AddBannerSlot")
-	myRaw := getBodyRow(req.Body)
+	myRaw := getBodyRaw(req.Body)
 	if myRaw == nil {
 		s.myLogger.Error("Request body processing error")
 		rw.WriteHeader(http.StatusInternalServerError)
@@ -78,7 +90,7 @@ func (s *Server) AddBannerSlotFunc(rw http.ResponseWriter, req *http.Request) {
 
 func (s *Server) BannerClickFunc(rw http.ResponseWriter, req *http.Request) {
 	s.myLogger.Info("BannerClick")
-	myRaw := getBodyRow(req.Body)
+	myRaw := getBodyRaw(req.Body)
 	if myRaw == nil {
 		s.myLogger.Error("Request body processing error")
 		rw.WriteHeader(http.StatusInternalServerError)
@@ -101,7 +113,7 @@ func (s *Server) BannerClickFunc(rw http.ResponseWriter, req *http.Request) {
 
 func (s *Server) DelBannerSlotFunc(rw http.ResponseWriter, req *http.Request) {
 	s.myLogger.Info("DelBannerSlot")
-	myRaw1 := getBodyRow(req.Body)
+	myRaw1 := getBodyRaw(req.Body)
 	if myRaw1 == nil {
 		s.myLogger.Error("Request body processing error")
 		rw.WriteHeader(http.StatusInternalServerError)
@@ -123,7 +135,7 @@ func (s *Server) DelBannerSlotFunc(rw http.ResponseWriter, req *http.Request) {
 
 func (s *Server) GetBannerForSlotFunc(rw http.ResponseWriter, req *http.Request) {
 	s.myLogger.Info("GetBannerForSlot")
-	myRaw := getBodyRow(req.Body)
+	myRaw := getBodyRaw(req.Body)
 	if myRaw == nil {
 		s.myLogger.Error("Request body processing error")
 		rw.WriteHeader(http.StatusInternalServerError)
