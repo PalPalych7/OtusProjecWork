@@ -28,10 +28,13 @@ func main() {
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 	storage := sqlstorage.New(ctx, config.DB, nil)
-	logg.Info("Connected to storage:", storage)
 	if err := storage.Connect(); err != nil {
-		logg.Fatal(err.Error())
+		logg.Error(err.Error())
+		time.Sleep(time.Minute * 1)
+	} else {
+		logg.Info("successful connect to DB")
 	}
+
 	defer storage.Close()
 	myRQ, err := rabbitmq.CreateQueue(ctx, config.Rabbit)
 	if err != nil {

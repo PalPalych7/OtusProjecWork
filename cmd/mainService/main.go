@@ -38,8 +38,10 @@ func main() {
 
 	storage := sqlstorage.New(ctx, config.DB, myBandid)
 	if err := storage.Connect(); err != nil {
+		logg.Error(err.Error())
 		time.Sleep(time.Minute * 1)
-		logg.Fatal(err.Error())
+	} else {
+		logg.Info("successful connect to DB")
 	}
 	defer storage.Close()
 

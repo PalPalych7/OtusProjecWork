@@ -63,7 +63,6 @@ func (s *Server) Serve() error {
 	}
 
 	err := server.ListenAndServe()
-	//	http.ListenAndServe(s.myHTTP.Addr, s.loggingMiddleware(mux))
 	if err != nil {
 		s.myLogger.Error(err)
 	}

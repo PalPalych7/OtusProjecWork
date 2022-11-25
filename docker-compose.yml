@@ -6,8 +6,11 @@ services:
     restart: always
     image: postgres:13.3    
     environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "otusfinalproj"
+      POSTGRES_USER: "otusfinalproj"
+      POSTGRES_DB: "otusfinalproj"
+#      POSTGRES_DB: postgres
+#      POSTGRES_USER: postgres
       POSTGRES_HOST_AUTH_METHOD: trust
       PGDATA: "/var/lib/postgresql/data/pgdata"
     volumes:

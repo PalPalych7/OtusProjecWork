@@ -68,7 +68,7 @@ func (s *mySuite) SetupSuite() {
 
 	s.hostName = "http://mainSevice:5000/"
 	s.ctx = context.Background()
-	myStr := "postgres://testuser:123456@postgres_db:5432/otusfinalproj?sslmode=disable" // через докер
+	myStr := "postgres://otusfinalproj:otusfinalproj@postgres_db:5432/otusfinalproj?sslmode=disable" // через докер
 	//	myStr := "postgres://testuser:123456@localhost:5432/otusfinalproj?sslmode=disable" // локально
 
 	fmt.Println("start connect to postgrace:", myStr)

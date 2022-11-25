@@ -34,6 +34,12 @@ type BannerStatStruct struct {
 	RecDate    string
 }
 
+func New(ctx context.Context, myDBConf DBConf, myBandit manyarmedbandit.MyBandit) *Storage {
+	return &Storage{
+		DBConf: myDBConf, Ctx: ctx, MyBandit: myBandit,
+	}
+}
+
 func rowsToStruct(rows *sql.Rows) ([]manyarmedbandit.BannerStruct, error) {
 	var myBannerList []manyarmedbandit.BannerStruct
 	var bannerID, ShowCount, ClickCount int
@@ -42,18 +48,23 @@ func rowsToStruct(rows *sql.Rows) ([]manyarmedbandit.BannerStruct, error) {
 		if err := rows.Scan(&bannerID, &ShowCount, &ClickCount); err != nil {
 			return nil, err
 		}
-		myBannerList = append(myBannerList, manyarmedbandit.BannerStruct{bannerID, ShowCount, ClickCount}) //nolint
+		myBanner := manyarmedbandit.BannerStruct{
+			BannerID:   bannerID,
+			ShowCount:  ShowCount,
+			ClickCount: ClickCount,
+		}
+		myBannerList = append(myBannerList, myBanner)
 	}
 	return myBannerList, nil
 }
 
-func rowsToStat(rows *sql.Rows) ([]BannerStatStruct, error) {
+func rawsToStat(raws *sql.Rows) ([]BannerStatStruct, error) {
 	var myBannerList []BannerStatStruct
 	var id, slotID, bannerID, socGroupID int
 	var statType, recDate string
-	defer rows.Close()
-	for rows.Next() {
-		if err := rows.Scan(&id, &slotID, &bannerID, &socGroupID, &statType, &recDate); err != nil {
+	defer raws.Close()
+	for raws.Next() {
+		if err := raws.Scan(&id, &slotID, &bannerID, &socGroupID, &statType, &recDate); err != nil {
 			return nil, err
 		}
 		myBannerList = append(myBannerList, BannerStatStruct{id, slotID, bannerID, socGroupID, statType, recDate})
@@ -61,23 +72,15 @@ func rowsToStat(rows *sql.Rows) ([]BannerStatStruct, error) {
 	return myBannerList, nil
 }
 
-func New(ctx context.Context, myDBConf DBConf, myBandit manyarmedbandit.MyBandit) *Storage {
-	return &Storage{
-		DBConf: myDBConf, Ctx: ctx, MyBandit: myBandit,
-	}
-}
-
 func (s *Storage) Connect() error {
 	var err error
-	//	myStr := "postgres://" + s.DBUserName + ":" + s.DBPassword + "@" + "postgres:5432/" + s.DBName + "?sslmode=disable"
-	myStr := "postgres://" + s.DBConf.DBUserName + ":" + s.DBConf.DBPassward + "@" + s.DBConf.DBHost + ":" + s.DBConf.DBPort + "/" + s.DBConf.DBName + "?sslmode=disable" //nolint
+	myStr := "postgres://" + s.DBConf.DBUserName + ":" + s.DBConf.DBPassward + "@"
+	myStr += s.DBConf.DBHost + ":" + s.DBConf.DBPort + "/" + s.DBConf.DBName + "?sslmode=disable"
 	fmt.Println("start connect to postgrace:", myStr)
 	s.DBConnect, err = sql.Open("postgres", myStr)
-	fmt.Println("result: s.DBConnect:", err)
 	if err == nil {
 		err = s.DBConnect.PingContext(s.Ctx)
 	}
-	fmt.Println("ping_result:", err)
 	return err
 }
 
@@ -156,7 +159,7 @@ func (s *Storage) GetBannerForSlot(slotID int, socGroupID int) (int, error) {
 
 func (s *Storage) GetBannerStat() ([]BannerStatStruct, error) {
 	queryStat := `
-		select  *
+		select id, slot_id, banner_id, soc_group_id, stat_type, rec_date
 		from banner_stat
 		where id>(select max(banner_stat_id) from send_stat_max_id)	
 	`
@@ -165,7 +168,7 @@ func (s *Storage) GetBannerStat() ([]BannerStatStruct, error) {
 		return nil, errStat
 	}
 
-	myBannerStatList, errStruct := rowsToStat(myStat)
+	myBannerStatList, errStruct := rawsToStat(myStat)
 	if errStruct != nil {
 		return nil, errStruct
 	}
