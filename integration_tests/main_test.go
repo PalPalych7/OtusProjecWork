@@ -69,7 +69,7 @@ func (s *mySuite) SetupSuite() {
 	s.hostName = "http://mainSevice:5000/"
 	s.ctx = context.Background()
 	myStr := "postgres://otusfinalproj:otusfinalproj@postgres_db:5432/otusfinalproj?sslmode=disable" // через докер
-	//	myStr := "postgres://testuser:123456@localhost:5432/otusfinalproj?sslmode=disable" // локально
+	// myStr := "postgres://otusfinalproj:otusfinalproj@localhost:5432/otusfinalproj?sslmode=disable" // локально
 
 	fmt.Println("start connect to postgrace:", myStr)
 	s.DBConnect, err = sql.Open("postgres", myStr)
@@ -100,7 +100,8 @@ func (s *mySuite) TearDownSuite() {
 
 func (s *mySuite) SendRequest(myMethodName string, myStruct interface{}) []byte {
 	bodyRaw, err = json.Marshal(myStruct)
-
+	fmt.Printf("%#v", myStruct)
+	fmt.Println(myStruct, "-", bodyRaw)
 	s.Require().NoError(err)
 	req, err = http.NewRequestWithContext(s.ctx, http.MethodPost, s.hostName+myMethodName, bytes.NewBuffer(bodyRaw))
 	s.Require().NoError(err)

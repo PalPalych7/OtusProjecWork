@@ -34,7 +34,6 @@ func main() {
 	} else {
 		logg.Info("successful connect to DB")
 	}
-
 	defer storage.Close()
 	myRQ, err := rabbitmq.CreateQueue(ctx, config.Rabbit)
 	if err != nil {

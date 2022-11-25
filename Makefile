@@ -71,4 +71,7 @@ down:
 integration_tests: run_compose
 	docker-compose up integraton_test
 
+gen_mocks:
+	docker run -v "$PWD":/src -w /src vektra/mockery --all
+
 .PHONY: build run build-img run-img test lint

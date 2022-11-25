@@ -15,12 +15,12 @@ import (
 
 var configFile string
 
-type serverInt interface {
+type ServerInterface interface {
 	Serve() error
 	Stop() error
 }
 
-var server serverInt
+var server ServerInterface
 
 func init() {
 	flag.StringVar(&configFile, "config", "../../configs/config.toml", "Path to configuration file")

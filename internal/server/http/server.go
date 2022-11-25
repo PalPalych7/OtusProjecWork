@@ -3,6 +3,7 @@ package internalhttp
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -13,18 +14,18 @@ import (
 
 type Server struct {
 	myCtx     context.Context
-	myStorage myStorage
-	myLogger  myLogger
+	myStorage Storage
+	myLogger  Logger
 	HTTPConf  string
 	myHTTP    http.Server
 }
 
-type myLogger interface {
+type Logger interface {
 	Info(args ...interface{})
 	Error(args ...interface{})
 }
 
-type myStorage interface {
+type Storage interface {
 	Connect() error
 	AddBannerSlot(slotID int, bannerID int) error
 	DelBannerSlot(slotID int, bannerID int) error
@@ -35,7 +36,7 @@ type myStorage interface {
 	Close() error
 }
 
-func NewServer(ctx context.Context, app myStorage, httpConf string, myLogger myLogger) *Server {
+func NewServer(ctx context.Context, app Storage, httpConf string, myLogger Logger) *Server {
 	return &Server{myCtx: ctx, myStorage: app, myLogger: myLogger, HTTPConf: httpConf}
 }
 
@@ -51,10 +52,10 @@ func getBodyRaw(reqBody io.ReadCloser) []byte {
 func (s *Server) Serve() error {
 	s.myHTTP.Addr = s.HTTPConf
 	mux := http.NewServeMux()
-	mux.HandleFunc("/AddBannerSlot", s.AddBannerSlotFunc)
-	mux.HandleFunc("/GetBannerForSlot", s.GetBannerForSlotFunc)
-	mux.HandleFunc("/BannerClick", s.BannerClickFunc)
-	mux.HandleFunc("/DelBannerSlot", s.DelBannerSlotFunc)
+	mux.HandleFunc("/AddBannerSlot", s.AddBannerSlot)
+	mux.HandleFunc("/GetBannerForSlot", s.GetBannerForSlot)
+	mux.HandleFunc("/BannerClick", s.BannerClick)
+	mux.HandleFunc("/DelBannerSlot", s.DelBannerSlot)
 
 	server := &http.Server{
 		Addr:              s.myHTTP.Addr,
@@ -74,7 +75,7 @@ func (s *Server) Stop() error {
 	return err
 }
 
-func (s *Server) AddBannerSlotFunc(rw http.ResponseWriter, req *http.Request) {
+func (s *Server) AddBannerSlot(rw http.ResponseWriter, req *http.Request) {
 	s.myLogger.Info("AddBannerSlot")
 	myRaw := getBodyRaw(req.Body)
 	if myRaw == nil {
@@ -82,15 +83,14 @@ func (s *Server) AddBannerSlotFunc(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	myStruct := SlotBanner{}
-	if err := json.Unmarshal(myRaw, &myStruct); err != nil {
-		s.myLogger.Info(myRaw)
+	mySB := SlotBanner{}
+	if err := json.Unmarshal(myRaw, &mySB); err != nil {
 		s.myLogger.Error("Error json.Unmarshal - " + err.Error())
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	s.myLogger.Info("myStruct=", myStruct, "slotId=", myStruct.SlotID)
-	myErr := s.myStorage.AddBannerSlot(myStruct.SlotID, myStruct.BannerID)
+	fmt.Println("I am heare", mySB)
+	myErr := s.myStorage.AddBannerSlot(mySB.SlotID, mySB.BannerID)
 	s.myLogger.Info("result:", myErr)
 	if myErr != nil {
 		s.myLogger.Error(myErr)
@@ -98,7 +98,7 @@ func (s *Server) AddBannerSlotFunc(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (s *Server) BannerClickFunc(rw http.ResponseWriter, req *http.Request) {
+func (s *Server) BannerClick(rw http.ResponseWriter, req *http.Request) {
 	s.myLogger.Info("BannerClick")
 	myRaw := getBodyRaw(req.Body)
 	if myRaw == nil {
@@ -106,14 +106,14 @@ func (s *Server) BannerClickFunc(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	myStruct := ForBannerClick{}
-	if err := json.Unmarshal(myRaw, &myStruct); err != nil {
+	myFBC := ForBannerClick{}
+	if err := json.Unmarshal(myRaw, &myFBC); err != nil {
 		s.myLogger.Info(myRaw)
 		s.myLogger.Error("Error json.Unmarshal - " + err.Error())
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	myErr := s.myStorage.BannerClick(myStruct.SlotID, myStruct.BannerID, myStruct.SocGroupID)
+	myErr := s.myStorage.BannerClick(myFBC.SlotID, myFBC.BannerID, myFBC.SocGroupID)
 	s.myLogger.Info("result:", myErr)
 	if myErr != nil {
 		s.myLogger.Error(myErr)
@@ -121,7 +121,7 @@ func (s *Server) BannerClickFunc(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (s *Server) DelBannerSlotFunc(rw http.ResponseWriter, req *http.Request) {
+func (s *Server) DelBannerSlot(rw http.ResponseWriter, req *http.Request) {
 	s.myLogger.Info("DelBannerSlot")
 	myRaw1 := getBodyRaw(req.Body)
 	if myRaw1 == nil {
@@ -129,21 +129,21 @@ func (s *Server) DelBannerSlotFunc(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	myStruct1 := SlotBanner{}
-	if err1 := json.Unmarshal(myRaw1, &myStruct1); err1 != nil {
+	mySB := SlotBanner{}
+	if err1 := json.Unmarshal(myRaw1, &mySB); err1 != nil {
 		s.myLogger.Info(myRaw1)
 		s.myLogger.Error("Error json.Unmarshal - " + err1.Error())
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	myErr := s.myStorage.DelBannerSlot(myStruct1.SlotID, myStruct1.BannerID)
+	myErr := s.myStorage.DelBannerSlot(mySB.SlotID, mySB.BannerID)
 	if myErr != nil {
 		s.myLogger.Error(myErr)
 		rw.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
-func (s *Server) GetBannerForSlotFunc(rw http.ResponseWriter, req *http.Request) {
+func (s *Server) GetBannerForSlot(rw http.ResponseWriter, req *http.Request) {
 	s.myLogger.Info("GetBannerForSlot")
 	myRaw := getBodyRaw(req.Body)
 	if myRaw == nil {
@@ -151,15 +151,15 @@ func (s *Server) GetBannerForSlotFunc(rw http.ResponseWriter, req *http.Request)
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	myStruct := ForGetBanner{}
-	if err := json.Unmarshal(myRaw, &myStruct); err != nil {
+	myFGBS := ForGetBanner{}
+	if err := json.Unmarshal(myRaw, &myFGBS); err != nil {
 		s.myLogger.Info(myRaw)
 		s.myLogger.Error("Error json.Unmarshal - " + err.Error())
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	s.myLogger.Info("myStruct=", myStruct)
-	bannerID, myEr := s.myStorage.GetBannerForSlot(myStruct.SlotID, myStruct.SocGroupID)
+	s.myLogger.Info("myFGBS=", myFGBS)
+	bannerID, myEr := s.myStorage.GetBannerForSlot(myFGBS.SlotID, myFGBS.SocGroupID)
 	s.myLogger.Info(bannerID, myEr)
 	if myEr != nil {
 		s.myLogger.Error(myEr)
