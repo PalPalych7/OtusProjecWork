@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/PalPalych7/OtusProjectWork/internal/logger"
+	ms "github.com/PalPalych7/OtusProjectWork/internal/mainstructs"
 	manyarmedbandit "github.com/PalPalych7/OtusProjectWork/internal/manyArmedBandit"
 	internalhttp "github.com/PalPalych7/OtusProjectWork/internal/server/http"
 	"github.com/PalPalych7/OtusProjectWork/internal/sqlstorage"
@@ -21,40 +21,44 @@ func init() {
 }
 
 func main() {
+	var logg ms.Logger
+	var myBandid ms.MyBandit
+	var storage ms.Storage
+	var server ms.Server
+	var err error
+
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 	flag.Parse()
-	fmt.Println(flag.Args(), configFile)
 	config := NewConfig(configFile)
-	fmt.Println("config=", config)
-	logg := logger.New(config.Logger.LogFile, config.Logger.Level)
-	fmt.Println(config.Logger.Level)
-	fmt.Println("logg=", logg)
-	logg.Info("Start!")
-	myBandid := manyarmedbandit.New(config.Bandit)
-	logg.Info("myBandid=", myBandid)
 
-	storage := sqlstorage.New(ctx, config.DB, myBandid)
-	logg.Info("Get new storage:", storage)
-	if err := storage.Connect(); err != nil {
-		fmt.Println("ошибка конекта к БД", err)
-		time.Sleep(time.Minute * 3)
-		logg.Fatal(err.Error())
+	logg = logger.New(config.Logger.LogFile, config.Logger.Level)
+	logg.Info("Start!")
+	myBandid = manyarmedbandit.New(config.Bandit)
+
+	storage = sqlstorage.New(config.DB, myBandid)
+	ctxDB, cancel := context.WithTimeout(ctx, time.Second*time.Duration(config.HTTP.TimeOutSec))
+	defer cancel()
+	if err = storage.Connect(ctxDB); err != nil {
+		logg.Error(err.Error())
+		time.Sleep(time.Minute * 1)
+	} else {
+		logg.Info("successful connect to DB")
 	}
 	defer storage.Close()
 
-	server := internalhttp.NewServer(ctx, storage /*config.HTTP.Host+*/, ":"+config.HTTP.Port, logg)
+	server = internalhttp.NewServer(ctx, storage, config.HTTP, logg)
 	defer server.Stop()
 
 	go func() {
-		fmt.Println("lets startserver!")
-		if err := server.Start(); err != nil {
+		if err := server.Serve(); err != nil {
 			logg.Fatal("failed to start http server: " + err.Error())
+		} else {
+			logg.Info("Server was started")
 		}
 		<-ctx.Done()
 	}()
 	<-ctx.Done()
-	fmt.Println("finish!")
-	logg.Info("finish!")
+	logg.Info("Finish!")
 }

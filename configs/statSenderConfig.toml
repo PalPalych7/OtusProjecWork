@@ -1,13 +1,13 @@
 [Logger]
-Level="TRACE"
+Level="DEBUG"
 LogFile="../statSender.log"
 
 [DB]
 DbHost="postgres_db" 
 DbPort="5432"
 DbName="otusfinalproj" 
-DbUserName="testuser" 
-DbPassward="123456"
+DbUserName="otusfinalproj" 
+DbPassward="otusfinalproj"
 
 [Rabbit]
 uri="amqp://guest:guest@rabbitmq:5672/"
@@ -15,3 +15,5 @@ exchange="statSender"
 exchangeType="direct"
 queue="queue1"
 bindingKey="myKey"
+sleepSecond=30
+timeOutSec=10

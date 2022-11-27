@@ -4,12 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/PalPalych7/OtusProjectWork/internal/logger"
+	ms "github.com/PalPalych7/OtusProjectWork/internal/mainstructs"
 	rabbitmq "github.com/PalPalych7/OtusProjectWork/internal/rabbitMQ"
 	"github.com/PalPalych7/OtusProjectWork/internal/sqlstorage"
 )
@@ -21,50 +21,54 @@ func init() {
 }
 
 func main() {
+	var logg ms.Logger
+	var storage ms.Storage
+	var myRQ ms.RabbitQueue
+	var err error
+
 	flag.Parse()
-	fmt.Println(flag.Args(), configFile)
 	config := NewConfig(configFile)
-	fmt.Println("config=", config)
-	logg := logger.New(config.Logger.LogFile, config.Logger.Level)
-	fmt.Println(config.Logger.Level)
-	fmt.Println("logg=", logg)
+	logg = logger.New(config.Logger.LogFile, config.Logger.Level)
 	logg.Info("Start!")
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
-	fmt.Println("start storage")
-	storage := sqlstorage.New(ctx, config.DB, nil)
-	logg.Info("Connected to storage:", storage)
-	fmt.Println("try connect to storage:", config.DB, storage)
-	err := storage.Connect()
-	fmt.Println("Connect result:", err)
-	if err != nil {
-		logg.Fatal(err.Error())
+	storage = sqlstorage.New(config.DB, nil)
+
+	ctxDB, cancel := context.WithTimeout(ctx, time.Second*time.Duration(config.Rabbit.TimeOutSec))
+	defer cancel()
+
+	if err = storage.Connect(ctxDB); err != nil {
+		logg.Error(err.Error())
+		time.Sleep(time.Second * time.Duration(config.Rabbit.SleepSecond))
+	} else {
+		logg.Info("successful connect to DB")
 	}
 	defer storage.Close()
 
-	fmt.Println("Start Connected to Rabbit:")
-	myRQ, err := rabbitmq.CreateQueue(ctx, config.Rabbit)
-	fmt.Println("Result Connected to Rabbit:", err)
+	myRQ, err = rabbitmq.New(ctx, config.Rabbit)
 	if err != nil {
-		time.Sleep(time.Minute * 3)
+		logg.Fatal("Error getting object for RQ", err.Error())
+	}
+	err = myRQ.Start()
+	if err != nil {
 		logg.Fatal(err.Error())
 	}
-	defer myRQ.Shutdown()
 
-	logg.Info("Connected to Rabit! - ", myRQ)
+	logg.Info("Connected to Rabit!")
 	go func() {
 		for {
-			logg.Info("I not sleep :).")
+			logg.Debug("I not sleep :).")
 			// отправка оповещений
-			myStatList, err2 := storage.GetBannerStat()
+			myStatList, err2 := storage.GetBannerStat(ctx)
 			countRec := len(myStatList)
-			if err2 != nil { //nolint
+			switch {
+			case err2 != nil:
 				logg.Error("Error in GetBannerStat", err2)
-			} else if countRec == 0 {
-				logg.Info("Nothing found for sending")
-			} else {
-				logg.Info("Found ", countRec, "record for sending")
+			case countRec == 0:
+				logg.Debug("Nothing found for sending")
+			default:
+				logg.Debug("Found ", countRec, "record for sending")
 				myMess, errMarsh := json.Marshal(myStatList)
 				if errMarsh != nil {
 					logg.Error("json.Marshal error", errMarsh)
@@ -75,12 +79,12 @@ func main() {
 					logg.Info("message was succcessful send")
 				}
 				myStatID := myStatList[countRec-1].ID
-				logg.Info("max_stat_id=", myStatID)
-				if errChID := storage.ChangeSendStatID(myStatID); errChID != nil {
+				logg.Debug("max_stat_id=", myStatID)
+				if errChID := storage.ChangeSendStatID(ctx, myStatID); errChID != nil {
 					logg.Error("error in update max send ID -", errMarsh)
 				}
 			}
-			time.Sleep(time.Minute * 5)
+			time.Sleep(time.Second * time.Duration(config.Rabbit.SleepSecond))
 		}
 	}()
 	<-ctx.Done()

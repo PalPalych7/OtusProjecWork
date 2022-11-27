@@ -3,33 +3,27 @@ package internalhttp
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"time"
 
-	"github.com/PalPalych7/OtusProjectWork/internal/logger"
-	"github.com/PalPalych7/OtusProjectWork/internal/sqlstorage"
+	ms "github.com/PalPalych7/OtusProjectWork/internal/mainstructs"
 )
 
 type Server struct {
 	myCtx     context.Context
-	myStorage sqlstorage.MyStorage
-	myLogger  logger.MyLogger
-	HTTPConf  string
+	myStorage ms.Storage
+	myLogger  ms.Logger
+	HTTPConf  ms.HTTPConf
 	myHTTP    http.Server
 }
 
-type MyServer interface {
-	Start() error
-	Stop() error
-}
-
-func NewServer(ctx context.Context, app sqlstorage.MyStorage, httpConf string, myLogger logger.MyLogger) MyServer {
+func NewServer(ctx context.Context, app ms.Storage, httpConf ms.HTTPConf, myLogger ms.Logger) *Server {
 	return &Server{myCtx: ctx, myStorage: app, myLogger: myLogger, HTTPConf: httpConf}
 }
 
-func getBodyRow(reqBody io.ReadCloser) []byte {
+func getBodyRaw(reqBody io.ReadCloser) []byte {
 	raw, err := ioutil.ReadAll(reqBody)
 	if err != nil {
 		return nil
@@ -38,120 +32,130 @@ func getBodyRow(reqBody io.ReadCloser) []byte {
 	return raw
 }
 
-func (s *Server) Start() error {
-	s.myHTTP.Addr = s.HTTPConf
-	fmt.Println("serv=", s.HTTPConf)
-	s.myLogger.Info("serv=", s.HTTPConf)
-
+func (s *Server) Serve() error {
+	s.myHTTP.Addr = ":" + s.HTTPConf.Port
 	mux := http.NewServeMux()
+	mux.HandleFunc("/AddBannerSlot", s.AddBannerSlot)
+	mux.HandleFunc("/GetBannerForSlot", s.GetBannerForSlot)
+	mux.HandleFunc("/BannerClick", s.BannerClick)
+	mux.HandleFunc("/DelBannerSlot", s.DelBannerSlot)
 
-	mux.HandleFunc("/AddBannerSlot", s.AddBannerSlotFunc)
-	mux.HandleFunc("/GetBannerForSlot", s.GetBannerForSlotFunc)
-	mux.HandleFunc("/BannerClick", s.BannerClickFunc)
-	mux.HandleFunc("/DelBannerSlot", s.DelBannerSlotFunc)
-	http.ListenAndServe(s.myHTTP.Addr, s.loggingMiddleware(mux)) //nolint
-	return nil
-}
+	server := &http.Server{
+		Addr:              s.myHTTP.Addr,
+		ReadHeaderTimeout: time.Second * time.Duration(s.HTTPConf.ReadHeaderTimeout),
+		Handler:           s.loggingMiddleware(mux),
+	}
 
-func (s *Server) Stop() error {
-	fmt.Println("start finish server")
-	err := s.myHTTP.Shutdown(s.myCtx)
-	fmt.Println("end finish server")
+	err := server.ListenAndServe()
+	if err != nil {
+		s.myLogger.Error(err)
+	}
 	return err
 }
 
-func (s *Server) AddBannerSlotFunc(rw http.ResponseWriter, req *http.Request) {
+func (s *Server) Stop() error {
+	err := s.myHTTP.Shutdown(s.myCtx)
+	return err
+}
+
+func (s *Server) AddBannerSlot(rw http.ResponseWriter, req *http.Request) {
 	s.myLogger.Info("AddBannerSlot")
-	myRaw := getBodyRow(req.Body)
+	myCtx, cancel := context.WithTimeout(s.myCtx, time.Second*time.Duration(s.HTTPConf.TimeOutSec))
+	defer cancel()
+	myRaw := getBodyRaw(req.Body)
 	if myRaw == nil {
-		s.myLogger.Error("Ошибка обработки тела запроса")
+		s.myLogger.Error("Request body processing error")
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	myStruct := SlotBanner{}
-	if err := json.Unmarshal(myRaw, &myStruct); err != nil {
-		s.myLogger.Info(myRaw)
-		s.myLogger.Error("Ошибка перевода json в структуру - " + err.Error())
+	mySB := ms.SlotBanner{}
+	if err := json.Unmarshal(myRaw, &mySB); err != nil {
+		s.myLogger.Error("Error json.Unmarshal - " + err.Error())
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	s.myLogger.Info("myStruct=", myStruct, "slotId=", myStruct.SlotID)
-	myErr := s.myStorage.AddBannerSlot(myStruct.SlotID, myStruct.BannerID)
-	s.myLogger.Info("result:", myErr)
+	myErr := s.myStorage.AddBannerSlot(myCtx, mySB.SlotID, mySB.BannerID)
+	s.myLogger.Debug("result:", myErr)
 	if myErr != nil {
 		s.myLogger.Error(myErr)
 		rw.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
-func (s *Server) BannerClickFunc(rw http.ResponseWriter, req *http.Request) {
+func (s *Server) BannerClick(rw http.ResponseWriter, req *http.Request) {
 	s.myLogger.Info("BannerClick")
-	myRaw := getBodyRow(req.Body)
+	myCtx, cancel := context.WithTimeout(s.myCtx, time.Second*time.Duration(s.HTTPConf.TimeOutSec))
+	defer cancel()
+
+	myRaw := getBodyRaw(req.Body)
 	if myRaw == nil {
-		s.myLogger.Error("Ошибка обработки тела запроса")
+		s.myLogger.Error("Request body processing error")
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	myStruct := ForBannerClick{}
-	if err := json.Unmarshal(myRaw, &myStruct); err != nil {
-		s.myLogger.Info(myRaw)
-		s.myLogger.Error("Ошибка перевода json в структуру - " + err.Error())
+	myFBC := ms.ForBannerClick{}
+	if err := json.Unmarshal(myRaw, &myFBC); err != nil {
+		s.myLogger.Debug(myRaw)
+		s.myLogger.Error("Error json.Unmarshal - " + err.Error())
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	myErr := s.myStorage.BannerClick(myStruct.SlotID, myStruct.BannerID, myStruct.SocGroupID)
-	s.myLogger.Info("result:", myErr)
+	myErr := s.myStorage.BannerClick(myCtx, myFBC.SlotID, myFBC.BannerID, myFBC.SocGroupID)
+	s.myLogger.Debug("result:", myErr)
 	if myErr != nil {
 		s.myLogger.Error(myErr)
 		rw.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
-func (s *Server) DelBannerSlotFunc(rw http.ResponseWriter, req *http.Request) {
+func (s *Server) DelBannerSlot(rw http.ResponseWriter, req *http.Request) {
 	s.myLogger.Info("DelBannerSlot")
-	myRaw1 := getBodyRow(req.Body)
+	myCtx, cancel := context.WithTimeout(s.myCtx, time.Second*time.Duration(s.HTTPConf.TimeOutSec))
+	defer cancel()
+	myRaw1 := getBodyRaw(req.Body)
 	if myRaw1 == nil {
-		s.myLogger.Error("Ошибка при обработке тела запроса")
+		s.myLogger.Error("Request body processing error")
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	myStruct1 := SlotBanner{}
-	if err1 := json.Unmarshal(myRaw1, &myStruct1); err1 != nil {
-		s.myLogger.Info(myRaw1)
-		s.myLogger.Error("Ошибка при переводе json в структуру - " + err1.Error())
+	mySB := ms.SlotBanner{}
+	if err1 := json.Unmarshal(myRaw1, &mySB); err1 != nil {
+		s.myLogger.Debug(myRaw1)
+		s.myLogger.Error("Error json.Unmarshal - " + err1.Error())
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	myErr := s.myStorage.DelBannerSlot(myStruct1.SlotID, myStruct1.BannerID)
+	myErr := s.myStorage.DelBannerSlot(myCtx, mySB.SlotID, mySB.BannerID)
 	if myErr != nil {
 		s.myLogger.Error(myErr)
 		rw.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
-func (s *Server) GetBannerForSlotFunc(rw http.ResponseWriter, req *http.Request) {
+func (s *Server) GetBannerForSlot(rw http.ResponseWriter, req *http.Request) {
 	s.myLogger.Info("GetBannerForSlot")
-	myRaw := getBodyRow(req.Body)
+	myCtx, cancel := context.WithTimeout(s.myCtx, time.Second*time.Duration(s.HTTPConf.TimeOutSec))
+	defer cancel()
+	myRaw := getBodyRaw(req.Body)
 	if myRaw == nil {
-		s.myLogger.Error("Ошибка обработки тела запроса")
+		s.myLogger.Error("Request body processing error")
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	myStruct := ForGetBanner{}
-	if err := json.Unmarshal(myRaw, &myStruct); err != nil {
-		s.myLogger.Info(myRaw)
-		s.myLogger.Error("Ошибка перевода json в структуру - " + err.Error())
+	myFGBS := ms.ForGetBanner{}
+	if err := json.Unmarshal(myRaw, &myFGBS); err != nil {
+		s.myLogger.Debug(myRaw)
+		s.myLogger.Error("Error json.Unmarshal - " + err.Error())
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	s.myLogger.Info("myStruct=", myStruct)
-	bannerID, myEr := s.myStorage.GetBannerForSlot(myStruct.SlotID, myStruct.SocGroupID)
-	s.myLogger.Info(bannerID, myEr)
+	myGetBannerStruct, myEr := s.myStorage.GetBannerForSlot(myCtx, myFGBS.SlotID, myFGBS.SocGroupID)
+	s.myLogger.Debug(myGetBannerStruct, myEr)
 	if myEr != nil {
 		s.myLogger.Error(myEr)
 		rw.WriteHeader(http.StatusInternalServerError)
 	} else {
-		rawResp, err3 := json.Marshal(bannerID)
+		rawResp, err3 := json.Marshal(myGetBannerStruct)
 		if err3 == nil {
 			rw.Write(rawResp)
 		}

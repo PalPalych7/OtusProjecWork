@@ -1,24 +1,13 @@
 package logger
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
 	"github.com/sirupsen/logrus"
 )
 
-type MyLogger interface {
-	Trace(args ...interface{})
-	Debug(args ...interface{})
-	Info(args ...interface{})
-	Print(args ...interface{})
-	Warning(args ...interface{})
-	Error(args ...interface{})
-	Fatal(args ...interface{})
-}
-
-func New(fileName string, level string) MyLogger {
+func New(fileName string, level string) *logrus.Logger {
 	logger := logrus.New()
 	var mylevel logrus.Level
 	switch strings.ToUpper(level) {
@@ -41,7 +30,6 @@ func New(fileName string, level string) MyLogger {
 		if err == nil {
 			logger.Out = file
 		} else {
-			fmt.Println("Failed to log to file, using default stderr")
 			logger.Out = os.Stdout
 		}
 	} else {
