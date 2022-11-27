@@ -3,20 +3,19 @@ package internalhttp
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/PalPalych7/OtusProjectWork/internal/logger"
+	ms "github.com/PalPalych7/OtusProjectWork/internal/mainstructs"
 	"github.com/PalPalych7/OtusProjectWork/mocks"
 	"github.com/stretchr/testify/require"
 )
 
 func TestHTTP(t *testing.T) {
 	t.Run("main", func(t *testing.T) {
-		fmt.Println("start")
 		m := new(mocks.ServerInterface)
 		m.On("Serve").Return(nil)
 		err := m.Serve()
@@ -43,7 +42,7 @@ func TestHandler(t *testing.T) {
 	}
 
 	myLogger := logger.New("", "")
-	service := NewServer(context.Background(), nil, "", myLogger)
+	service := NewServer(context.Background(), nil, ms.HTTPConf{}, myLogger)
 	w := httptest.NewRecorder()
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

@@ -7,6 +7,9 @@ DOCKER_IMG_INT_TESTS="integration_test:develop"
 GIT_HASH := $(shell git log --format="%h" -n 1)
 LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X main.gitHash=$(GIT_HASH)
 
+gen_mocks:
+	docker run -v "$PWD":/src -w /src vektra/mockery --all
+
 build:
 	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/mainService
 
@@ -70,8 +73,5 @@ down:
 
 integration_tests: run_compose
 	docker-compose up integraton_test
-
-gen_mocks:
-	docker run -v "$PWD":/src -w /src vektra/mockery --all
 
 .PHONY: build run build-img run-img test lint

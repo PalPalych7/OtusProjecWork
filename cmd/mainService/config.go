@@ -4,26 +4,10 @@ import (
 	"log"
 
 	"github.com/BurntSushi/toml"
-	manyarmedbandit "github.com/PalPalych7/OtusProjectWork/internal/manyArmedBandit"
-	"github.com/PalPalych7/OtusProjectWork/internal/sqlstorage"
+	ms "github.com/PalPalych7/OtusProjectWork/internal/mainstructs"
 )
 
-type LoggerConf struct {
-	LogFile string
-	Level   string
-}
-
-type HTTPConf struct {
-	Host string
-	Port string
-}
-
-type Config struct {
-	Logger LoggerConf
-	HTTP   HTTPConf
-	DB     sqlstorage.DBConf
-	Bandit manyarmedbandit.BanditConfig
-}
+type Config ms.MainConfig
 
 func NewConfig(configFile string) Config {
 	var myConf Config

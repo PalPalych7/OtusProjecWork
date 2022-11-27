@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
@@ -31,7 +30,6 @@ func New(fileName string, level string) *logrus.Logger {
 		if err == nil {
 			logger.Out = file
 		} else {
-			fmt.Println("Failed to log to file, using default stderr")
 			logger.Out = os.Stdout
 		}
 	} else {

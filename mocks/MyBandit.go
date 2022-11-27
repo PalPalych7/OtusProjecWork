@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	manyarmedbandit "github.com/PalPalych7/OtusProjectWork/internal/manyArmedBandit"
+	mainstructs "github.com/PalPalych7/OtusProjectWork/internal/mainstructs"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -13,11 +13,11 @@ type MyBandit struct {
 }
 
 // GetBannerNum provides a mock function with given fields: arrStruct
-func (_m *MyBandit) GetBannerNum(arrStruct []manyarmedbandit.BannerStruct) int {
+func (_m *MyBandit) GetBannerNum(arrStruct []mainstructs.BannerStruct) int {
 	ret := _m.Called(arrStruct)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func([]manyarmedbandit.BannerStruct) int); ok {
+	if rf, ok := ret.Get(0).(func([]mainstructs.BannerStruct) int); ok {
 		r0 = rf(arrStruct)
 	} else {
 		r0 = ret.Get(0).(int)

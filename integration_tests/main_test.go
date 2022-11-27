@@ -40,17 +40,21 @@ type ForGetBanner struct {
 	SocGroupID int
 }
 
+type GetBannerStruct struct {
+	ID int
+}
+
 var (
-	err      error
-	bodyRaw  []byte
-	req      *http.Request
-	resp     *http.Response
-	countRec int
-	bannerID int
+	err               error
+	bodyRaw           []byte
+	req               *http.Request
+	resp              *http.Response
+	countRec          int
+	myGetBannerStruct GetBannerStruct
 )
 
 func (s *mySuite) CheckCountRec(myQueryText string, expCount int) {
-	mySQLRows, err := s.DBConnect.QueryContext(s.ctx, myQueryText) //nolint
+	mySQLRows, err := s.DBConnect.QueryContext(s.ctx, myQueryText)
 	s.Require().NoError(err)
 	defer mySQLRows.Close()
 	mySQLRows.Next()
@@ -61,7 +65,6 @@ func (s *mySuite) CheckCountRec(myQueryText string, expCount int) {
 }
 
 func (s *mySuite) SetupSuite() {
-	fmt.Println("start setup suit")
 	s.client = http.Client{
 		Timeout: time.Second * 5,
 	}
@@ -71,9 +74,7 @@ func (s *mySuite) SetupSuite() {
 	myStr := "postgres://otusfinalproj:otusfinalproj@postgres_db:5432/otusfinalproj?sslmode=disable" // через докер
 	// myStr := "postgres://otusfinalproj:otusfinalproj@localhost:5432/otusfinalproj?sslmode=disable" // локально
 
-	fmt.Println("start connect to postgrace:", myStr)
 	s.DBConnect, err = sql.Open("postgres", myStr)
-	fmt.Println("result: s.DBConnect:", err)
 	if err == nil {
 		err = s.DBConnect.PingContext(s.ctx)
 	}
@@ -86,22 +87,24 @@ func (s *mySuite) SetupSuite() {
 
 	_, err = s.DBConnect.ExecContext(s.ctx, "delete from banner_stat")
 	s.Require().NoError(err)
+	_, err = s.DBConnect.ExecContext(s.ctx, "update send_stat_max_id set banner_stat_id=0")
+	s.Require().NoError(err)
 	s.CheckCountRec("select count(*) RC from banner_stat", 0)
-	fmt.Println("finish setup suit")
 }
 
 func (s *mySuite) TearDownSuite() {
-	fmt.Println("start TearDownSuite")
-	_, err = s.DBConnect.ExecContext(s.ctx, "delete from slot_banner;delete from banner_stat;")
+	mySQL := `
+		delete from slot_banner;
+		delete from banner_stat;
+		update send_stat_max_id set banner_stat_id=0;
+	`
+	_, err = s.DBConnect.ExecContext(s.ctx, mySQL)
 	s.Require().NoError(err)
 	s.DBConnect.Close()
-	fmt.Println("finish TearDownSuite")
 }
 
-func (s *mySuite) SendRequest(myMethodName string, myStruct interface{}) []byte {
-	bodyRaw, err = json.Marshal(myStruct)
-	fmt.Printf("%#v", myStruct)
-	fmt.Println(myStruct, "-", bodyRaw)
+func (s *mySuite) SendRequest(myMethodName string, myAnyStruct interface{}) []byte {
+	bodyRaw, err = json.Marshal(myAnyStruct)
 	s.Require().NoError(err)
 	req, err = http.NewRequestWithContext(s.ctx, http.MethodPost, s.hostName+myMethodName, bytes.NewBuffer(bodyRaw))
 	s.Require().NoError(err)
@@ -125,21 +128,20 @@ func (s *mySuite) DelSlotBanner(mySlotBanner SlotBanner) { // удалени б�
 	s.Require().Empty(bodyRaw)
 }
 
-func (s *mySuite) GetBannerForSlot(mySlotSoc ForGetBanner) int { // получения баннера для показа в слоте
+func (s *mySuite) GetBannerForSlot(mySlotSoc ForGetBanner) GetBannerStruct { // получения баннера для показа в слоте
 	bodyRaw = s.SendRequest("GetBannerForSlot", mySlotSoc)
 	s.Require().NotEmpty(bodyRaw)
-	err = json.Unmarshal(bodyRaw, &bannerID)
+	err = json.Unmarshal(bodyRaw, &myGetBannerStruct)
 	s.Require().NoError(err)
-	return bannerID
+	return myGetBannerStruct
 }
 
-func (s *mySuite) BannerClick(myBannerClick ForBannerClick) { // кликg по баннеру
+func (s *mySuite) BannerClick(myBannerClick ForBannerClick) { // клик по баннеру
 	bodyRaw = s.SendRequest("BannerClick", myBannerClick)
 	s.Require().Empty(bodyRaw)
 }
 
 func (s *mySuite) Test1AddBanner() {
-	fmt.Println("statrt Test1AddBanner")
 	for i := 1; i <= 10; i++ {
 		s.AddSlotBanner(SlotBanner{1, i})
 	}
@@ -167,43 +169,53 @@ func (s *mySuite) Test2DelBanner() {
 }
 
 func (s *mySuite) Test3GetBannerForSlot() {
-	fmt.Println("start Test3GetBanner")
 	// убедимся, что к слоту 2 не првязан ни один баннер
 	s.CheckCountRec("select count(*) RC from slot_banner where slot_id=2", 0)
 	// поскольку к слоту 2 не првязан ни один баннер должен вернуть 0
-	bannerID = s.GetBannerForSlot(ForGetBanner{2, 1})
-	s.Require().Equal(0, bannerID)
+	myGetBannerStruct = s.GetBannerForSlot(ForGetBanner{2, 1})
+	s.Require().Equal(GetBannerStruct{}, myGetBannerStruct)
 
 	// добавим во второй слот баннер с ID=3
 	s.AddSlotBanner(SlotBanner{2, 3})
 	// теперь должен вернуть ID=3 (так как это единственный баннер
-	bannerID = s.GetBannerForSlot(ForGetBanner{2, 1})
-	s.Require().Equal(3, bannerID)
+	myGetBannerStruct = s.GetBannerForSlot(ForGetBanner{2, 1})
+	s.Require().Equal(3, myGetBannerStruct.ID)
 	// убедимся что этот показ отразился в статистике (1 раз)
 	s.CheckCountRec("select count(*) RC from banner_stat where stat_type='S' and slot_id=2 and banner_id=3", 1)
-	fmt.Println("finish Test3GetBanner")
 }
 
 func (s *mySuite) Test4BannerClick() {
-	fmt.Println("start Test4BannerClick")
 	// убедимся, что к в слоте 1 для баннера 2 для соц группы 3 ещё не было кликов
-	s.CheckCountRec(`select 
-	         		 	count(*) RC 
-	                 from banner_stat where stat_type='C' 
-					   	and slot_id=1 
-					   	and banner_id=2 
-					   	and soc_group_id=3`, 0)
+	mySQL := `
+	  select count(*) RC 
+	  from banner_stat 
+	  where stat_type='C' 
+		and slot_id=1 
+		and banner_id=2 
+		and soc_group_id=3`
+	s.CheckCountRec(mySQL, 0)
 	//  кликнем в слоте 1 на баннер 2 для соц группы 3
 	s.BannerClick(ForBannerClick{1, 2, 3})
 	// убедимся, что теперь сохранился 1 клик
-	s.CheckCountRec(`select 
-						count(*) RC 
-					 from banner_stat 
-					 where stat_type='C' 
-					 	and slot_id=1 
-						and banner_id=2 
-						and soc_group_id=3`, 1)
-	fmt.Println("finish Test4BannerClick")
+	s.CheckCountRec(mySQL, 1)
+}
+
+func (s *mySuite) Test5SendMessages() {
+	mySQL := `
+	  select count(*) RC 
+      from banner_stat 
+	  where id>(
+		select max(banner_stat_id) 
+		from send_stat_max_id
+	)`
+	// убедимся, что есть неотправленные сообщения (2)
+	s.CheckCountRec(mySQL, 2)
+
+	// уснём, чтобы дождаться отправки статистики
+	time.Sleep(time.Second * 30)
+
+	// убедимся, что теперь не осталоьс не отправленных сообщений
+	s.CheckCountRec(mySQL, 0)
 }
 
 func TestService(t *testing.T) {

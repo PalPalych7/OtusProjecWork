@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/PalPalych7/OtusProjectWork/internal/logger"
+	ms "github.com/PalPalych7/OtusProjectWork/internal/mainstructs"
 	rabbitmq "github.com/PalPalych7/OtusProjectWork/internal/rabbitMQ"
 	"github.com/PalPalych7/OtusProjectWork/internal/sqlstorage"
 )
@@ -20,42 +21,54 @@ func init() {
 }
 
 func main() {
+	var logg ms.Logger
+	var storage ms.Storage
+	var myRQ ms.RabbitQueue
+	var err error
+
 	flag.Parse()
 	config := NewConfig(configFile)
-	logg := logger.New(config.Logger.LogFile, config.Logger.Level)
+	logg = logger.New(config.Logger.LogFile, config.Logger.Level)
 	logg.Info("Start!")
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
-	storage := sqlstorage.New(ctx, config.DB, nil)
-	if err := storage.Connect(); err != nil {
+	storage = sqlstorage.New(config.DB, nil)
+
+	ctxDB, cancel := context.WithTimeout(ctx, time.Second*time.Duration(config.Rabbit.TimeOutSec))
+	defer cancel()
+
+	if err = storage.Connect(ctxDB); err != nil {
 		logg.Error(err.Error())
-		time.Sleep(time.Minute * 1)
+		time.Sleep(time.Second * time.Duration(config.Rabbit.SleepSecond))
 	} else {
 		logg.Info("successful connect to DB")
 	}
 	defer storage.Close()
-	myRQ, err := rabbitmq.CreateQueue(ctx, config.Rabbit)
+
+	myRQ, err = rabbitmq.New(ctx, config.Rabbit)
 	if err != nil {
-		time.Sleep(time.Minute * 1)
+		logg.Fatal("Error getting object for RQ", err.Error())
+	}
+	err = myRQ.Start()
+	if err != nil {
 		logg.Fatal(err.Error())
 	}
-	defer myRQ.Shutdown()
 
-	logg.Info("Connected to Rabit! - ", myRQ)
+	logg.Info("Connected to Rabit!")
 	go func() {
 		for {
-			logg.Info("I not sleep :).")
+			logg.Debug("I not sleep :).")
 			// отправка оповещений
-			myStatList, err2 := storage.GetBannerStat()
+			myStatList, err2 := storage.GetBannerStat(ctx)
 			countRec := len(myStatList)
 			switch {
 			case err2 != nil:
 				logg.Error("Error in GetBannerStat", err2)
 			case countRec == 0:
-				logg.Info("Nothing found for sending")
+				logg.Debug("Nothing found for sending")
 			default:
-				logg.Info("Found ", countRec, "record for sending")
+				logg.Debug("Found ", countRec, "record for sending")
 				myMess, errMarsh := json.Marshal(myStatList)
 				if errMarsh != nil {
 					logg.Error("json.Marshal error", errMarsh)
@@ -66,12 +79,12 @@ func main() {
 					logg.Info("message was succcessful send")
 				}
 				myStatID := myStatList[countRec-1].ID
-				logg.Info("max_stat_id=", myStatID)
-				if errChID := storage.ChangeSendStatID(myStatID); errChID != nil {
+				logg.Debug("max_stat_id=", myStatID)
+				if errChID := storage.ChangeSendStatID(ctx, myStatID); errChID != nil {
 					logg.Error("error in update max send ID -", errMarsh)
 				}
 			}
-			time.Sleep(time.Minute * time.Duration(config.Rabbit.SleepMinutes))
+			time.Sleep(time.Second * time.Duration(config.Rabbit.SleepSecond))
 		}
 	}()
 	<-ctx.Done()

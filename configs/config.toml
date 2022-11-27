@@ -1,5 +1,5 @@
 [Logger]
-Level = "TRACE"
+Level = "DEBUG"
 LogFile="../main.log"
 
 [DB]
@@ -12,6 +12,8 @@ DbPassward="otusfinalproj"
 [Http]
 Host="localhost"
 Port="5000"
+TimeOutSec=10
+ReadHeaderTimeout=5
 
 [Bandit]
 FullLearnigCount=100

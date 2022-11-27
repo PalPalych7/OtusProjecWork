@@ -4,20 +4,10 @@ import (
 	"log"
 
 	"github.com/BurntSushi/toml"
-	rabbitmq "github.com/PalPalych7/OtusProjectWork/internal/rabbitMQ"
-	"github.com/PalPalych7/OtusProjectWork/internal/sqlstorage"
+	ms "github.com/PalPalych7/OtusProjectWork/internal/mainstructs"
 )
 
-type LoggerConf struct {
-	LogFile string
-	Level   string
-}
-
-type Config struct {
-	Logger LoggerConf
-	Rabbit rabbitmq.RabbitCFG
-	DB     sqlstorage.DBConf
-}
+type Config ms.StatSenderConfig
 
 func NewConfig(configFile string) Config {
 	var myConf Config

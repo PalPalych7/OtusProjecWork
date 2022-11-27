@@ -1,5 +1,5 @@
 [Logger]
-Level="TRACE"
+Level="DEBUG"
 LogFile="../statSender.log"
 
 [DB]
@@ -15,4 +15,5 @@ exchange="statSender"
 exchangeType="direct"
 queue="queue1"
 bindingKey="myKey"
-sleepMinutes=5 
+sleepSecond=30
+timeOutSec=10

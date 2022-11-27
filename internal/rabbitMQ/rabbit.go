@@ -2,68 +2,20 @@ package rabbitmq
 
 import (
 	"context"
-	"log"
 
+	ms "github.com/PalPalych7/OtusProjectWork/internal/mainstructs"
 	"github.com/streadway/amqp"
 )
 
-type RabbitCFG struct {
-	URI          string
-	Exchange     string
-	ExchangeType string
-	Queue        string
-	BindingKey   string
-	ConsumerTag  string
-	SleepMinutes int
-}
-
 type RabbitQueue struct {
-	rabCfg     RabbitCFG
-	conn       *amqp.Connection
-	channel    *amqp.Channel
-	deliveries <-chan amqp.Delivery
-	done       chan error
-	ctx        context.Context
+	rabCfg  ms.RabbitCFG
+	conn    *amqp.Connection
+	channel *amqp.Channel
+	done    chan error
+	ctx     context.Context
 }
 
-func (r *RabbitQueue) SendMess(myMes []byte /*string*/) error {
-	err := r.channel.Publish(
-		r.rabCfg.Exchange,   // publish to an exchange
-		r.rabCfg.BindingKey, // routing to 0 or more queues
-		false,               // mandatory
-		false,               // immediate
-		amqp.Publishing{
-			Headers:         amqp.Table{},
-			ContentType:     "text/plain",
-			ContentEncoding: "",
-			Body:            myMes,
-			DeliveryMode:    amqp.Transient, // 1=non-persistent, 2=persistent
-			Priority:        0,              // 0-9
-		},
-	)
-	return err
-}
-
-func (r *RabbitQueue) Shutdown() {
-	r.channel.Cancel(r.rabCfg.ConsumerTag, true)
-	r.conn.Close()
-}
-
-func (r *RabbitQueue) Handle() {
-	for d := range r.deliveries {
-		log.Printf(
-			"got %dB delivery: [%v] %q",
-			len(d.Body),
-			d.DeliveryTag,
-			d.Body,
-		)
-		d.Ack(false)
-	}
-	log.Printf("handle: deliveries channel closed")
-	r.done <- nil
-}
-
-func CreateQueue(ctx context.Context, q RabbitCFG) (*RabbitQueue, error) {
+func New(ctx context.Context, q ms.RabbitCFG) (*RabbitQueue, error) {
 	c := &RabbitQueue{
 		rabCfg:  q,
 		conn:    nil,
@@ -71,49 +23,78 @@ func CreateQueue(ctx context.Context, q RabbitCFG) (*RabbitQueue, error) {
 		done:    make(chan error),
 		ctx:     ctx,
 	}
+	return c, nil
+}
+
+func (r *RabbitQueue) Start() error {
 	var err error
-	c.conn, err = amqp.Dial(q.URI)
+	r.conn, err = amqp.Dial(r.rabCfg.URI)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	c.channel, err = c.conn.Channel()
+	r.channel, err = r.conn.Channel()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	if err = c.channel.ExchangeDeclare(
-		q.Exchange,     // name of the exchange
-		q.ExchangeType, // type
-		true,           // durable
-		false,          // delete when complete
-		false,          // internal
-		false,          // noWait
-		nil,            // arguments
+	if err = r.channel.ExchangeDeclare(
+		r.rabCfg.Exchange,
+		r.rabCfg.ExchangeType,
+		true,
+		false,
+		false,
+		false,
+		nil,
 	); err != nil {
-		return nil, err
+		return err
 	}
 
-	log.Printf("declared Exchange, declaring Queue %q", q.Queue)
-	_, err = c.channel.QueueDeclare(
-		q.Queue, // name of the queue
-		true,    // durable
-		false,   // delete when unused
-		false,   // exclusive
-		false,   // noWait
-		nil,     // arguments
+	_, err = r.channel.QueueDeclare(
+		r.rabCfg.Queue,
+		true,
+		false,
+		false,
+		false,
+		nil,
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	if err = c.channel.QueueBind(
-		q.Queue,      // name of the queue
-		q.BindingKey, // bindingKey
-		q.Exchange,   // sourceExchange
-		false,        // noWait
-		nil,          // arguments
+	if err = r.channel.QueueBind(
+		r.rabCfg.Queue,
+		r.rabCfg.BindingKey,
+		r.rabCfg.Exchange,
+		false,
+		nil,
 	); err != nil {
-		return nil, err
+		return err
 	}
-	return c, err
+	return err
+}
+
+func (r *RabbitQueue) SendMess(myMes []byte) error {
+	err := r.channel.Publish(
+		r.rabCfg.Exchange,
+		r.rabCfg.BindingKey,
+		false,
+		false,
+		amqp.Publishing{
+			Headers:         amqp.Table{},
+			ContentType:     "text/plain",
+			ContentEncoding: "",
+			Body:            myMes,
+			DeliveryMode:    amqp.Transient,
+			Priority:        0,
+		},
+	)
+	return err
+}
+
+func (r *RabbitQueue) Shutdown() error {
+	err := r.channel.Cancel(r.rabCfg.ConsumerTag, true)
+	if err != nil {
+		return err
+	}
+	return r.conn.Close()
 }

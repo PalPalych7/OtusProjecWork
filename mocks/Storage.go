@@ -3,7 +3,9 @@
 package mocks
 
 import (
-	sqlstorage "github.com/PalPalych7/OtusProjectWork/internal/sqlstorage"
+	context "context"
+
+	mainstructs "github.com/PalPalych7/OtusProjectWork/internal/mainstructs"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -12,13 +14,13 @@ type Storage struct {
 	mock.Mock
 }
 
-// AddBannerSlot provides a mock function with given fields: slotID, bannerID
-func (_m *Storage) AddBannerSlot(slotID int, bannerID int) error {
-	ret := _m.Called(slotID, bannerID)
+// AddBannerSlot provides a mock function with given fields: ctx, slotID, bannerID
+func (_m *Storage) AddBannerSlot(ctx context.Context, slotID int, bannerID int) error {
+	ret := _m.Called(ctx, slotID, bannerID)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(int, int) error); ok {
-		r0 = rf(slotID, bannerID)
+	if rf, ok := ret.Get(0).(func(context.Context, int, int) error); ok {
+		r0 = rf(ctx, slotID, bannerID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -26,13 +28,13 @@ func (_m *Storage) AddBannerSlot(slotID int, bannerID int) error {
 	return r0
 }
 
-// BannerClick provides a mock function with given fields: slotID, bannerID, socGroupID
-func (_m *Storage) BannerClick(slotID int, bannerID int, socGroupID int) error {
-	ret := _m.Called(slotID, bannerID, socGroupID)
+// BannerClick provides a mock function with given fields: ctx, slotID, bannerID, socGroupID
+func (_m *Storage) BannerClick(ctx context.Context, slotID int, bannerID int, socGroupID int) error {
+	ret := _m.Called(ctx, slotID, bannerID, socGroupID)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(int, int, int) error); ok {
-		r0 = rf(slotID, bannerID, socGroupID)
+	if rf, ok := ret.Get(0).(func(context.Context, int, int, int) error); ok {
+		r0 = rf(ctx, slotID, bannerID, socGroupID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -40,13 +42,13 @@ func (_m *Storage) BannerClick(slotID int, bannerID int, socGroupID int) error {
 	return r0
 }
 
-// ChangeSendStatID provides a mock function with given fields: ID
-func (_m *Storage) ChangeSendStatID(ID int) error {
-	ret := _m.Called(ID)
+// ChangeSendStatID provides a mock function with given fields: ctx, ID
+func (_m *Storage) ChangeSendStatID(ctx context.Context, ID int) error {
+	ret := _m.Called(ctx, ID)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(int) error); ok {
-		r0 = rf(ID)
+	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
+		r0 = rf(ctx, ID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -68,13 +70,13 @@ func (_m *Storage) Close() error {
 	return r0
 }
 
-// Connect provides a mock function with given fields:
-func (_m *Storage) Connect() error {
-	ret := _m.Called()
+// Connect provides a mock function with given fields: ctx
+func (_m *Storage) Connect(ctx context.Context) error {
+	ret := _m.Called(ctx)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func() error); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(context.Context) error); ok {
+		r0 = rf(ctx)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -82,13 +84,13 @@ func (_m *Storage) Connect() error {
 	return r0
 }
 
-// DelBannerSlot provides a mock function with given fields: slotID, bannerID
-func (_m *Storage) DelBannerSlot(slotID int, bannerID int) error {
-	ret := _m.Called(slotID, bannerID)
+// DelBannerSlot provides a mock function with given fields: ctx, slotID, bannerID
+func (_m *Storage) DelBannerSlot(ctx context.Context, slotID int, bannerID int) error {
+	ret := _m.Called(ctx, slotID, bannerID)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(int, int) error); ok {
-		r0 = rf(slotID, bannerID)
+	if rf, ok := ret.Get(0).(func(context.Context, int, int) error); ok {
+		r0 = rf(ctx, slotID, bannerID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -96,20 +98,20 @@ func (_m *Storage) DelBannerSlot(slotID int, bannerID int) error {
 	return r0
 }
 
-// GetBannerForSlot provides a mock function with given fields: slotID, socGroupID
-func (_m *Storage) GetBannerForSlot(slotID int, socGroupID int) (int, error) {
-	ret := _m.Called(slotID, socGroupID)
+// GetBannerForSlot provides a mock function with given fields: ctx, slotID, socGroupID
+func (_m *Storage) GetBannerForSlot(ctx context.Context, slotID int, socGroupID int) (mainstructs.GetBannerStruct, error) {
+	ret := _m.Called(ctx, slotID, socGroupID)
 
-	var r0 int
-	if rf, ok := ret.Get(0).(func(int, int) int); ok {
-		r0 = rf(slotID, socGroupID)
+	var r0 mainstructs.GetBannerStruct
+	if rf, ok := ret.Get(0).(func(context.Context, int, int) mainstructs.GetBannerStruct); ok {
+		r0 = rf(ctx, slotID, socGroupID)
 	} else {
-		r0 = ret.Get(0).(int)
+		r0 = ret.Get(0).(mainstructs.GetBannerStruct)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int, int) error); ok {
-		r1 = rf(slotID, socGroupID)
+	if rf, ok := ret.Get(1).(func(context.Context, int, int) error); ok {
+		r1 = rf(ctx, slotID, socGroupID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -117,22 +119,22 @@ func (_m *Storage) GetBannerForSlot(slotID int, socGroupID int) (int, error) {
 	return r0, r1
 }
 
-// GetBannerStat provides a mock function with given fields:
-func (_m *Storage) GetBannerStat() ([]sqlstorage.BannerStatStruct, error) {
-	ret := _m.Called()
+// GetBannerStat provides a mock function with given fields: ctx
+func (_m *Storage) GetBannerStat(ctx context.Context) ([]mainstructs.BannerStatStruct, error) {
+	ret := _m.Called(ctx)
 
-	var r0 []sqlstorage.BannerStatStruct
-	if rf, ok := ret.Get(0).(func() []sqlstorage.BannerStatStruct); ok {
-		r0 = rf()
+	var r0 []mainstructs.BannerStatStruct
+	if rf, ok := ret.Get(0).(func(context.Context) []mainstructs.BannerStatStruct); ok {
+		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]sqlstorage.BannerStatStruct)
+			r0 = ret.Get(0).([]mainstructs.BannerStatStruct)
 		}
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
 	} else {
 		r1 = ret.Error(1)
 	}

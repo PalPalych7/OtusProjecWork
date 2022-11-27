@@ -4,27 +4,18 @@ import (
 	"crypto/rand"
 	"math"
 	"math/big"
+
+	ms "github.com/PalPalych7/OtusProjectWork/internal/mainstructs"
 )
 
-type BanditConfig struct {
-	FullLearnigCount     int // количество запросов в режиме "полного обучения"
-	PartialLearningCount int // количество запросов в режиме "чаcтичного обучения"
-	FinalRandomPecent    int // вероятность случайного выбора после обучения (в процентах)
-}
-
-type BannerStruct struct {
-	BannerID   int
-	ShowCount  int
-	ClickCount int
-}
-
-type MyBandit interface {
-	GetBannerNum(arrStruct []BannerStruct) int
-}
-
-type banditStruct struct {
-	BanditConfig BanditConfig
+type BanditStruct struct {
+	BanditConfig ms.BanditConfig
 	Cend         float32 // цена деления (на какой процент уменьшаем "случайную величину" за 1 показ)
+}
+
+func New(bc ms.BanditConfig) *BanditStruct {
+	cend := float32(100-bc.FinalRandomPecent) / float32(bc.PartialLearningCount)
+	return &BanditStruct{bc, cend}
 }
 
 func randInt(maxV int) int {
@@ -33,7 +24,7 @@ func randInt(maxV int) int {
 	return randVal
 }
 
-func kvadrProc(arrBS []BannerStruct) int {
+func kvadrProc(arrBS []ms.BannerStruct) int {
 	arrSumKvProc := make([]float64, 0)
 	var curKvProc float64
 	var sumKvProc float64
@@ -58,7 +49,7 @@ func kvadrProc(arrBS []BannerStruct) int {
 	return res
 }
 
-func (b banditStruct) GetBannerNum(arrStruct []BannerStruct) int {
+func (b *BanditStruct) GetBannerNum(arrStruct []ms.BannerStruct) int {
 	showSum := 0
 	var res int
 	for _, v := range arrStruct {
@@ -83,9 +74,4 @@ func (b banditStruct) GetBannerNum(arrStruct []BannerStruct) int {
 		res = kvadrProc(arrStruct)
 	}
 	return res
-}
-
-func New(bc BanditConfig) MyBandit {
-	cend := float32(100-bc.FinalRandomPecent) / float32(bc.PartialLearningCount)
-	return banditStruct{bc, cend}
 }

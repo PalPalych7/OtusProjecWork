@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/PalPalych7/OtusProjectWork/internal/logger"
+	ms "github.com/PalPalych7/OtusProjectWork/internal/mainstructs"
 	manyarmedbandit "github.com/PalPalych7/OtusProjectWork/internal/manyArmedBandit"
 	internalhttp "github.com/PalPalych7/OtusProjectWork/internal/server/http"
 	"github.com/PalPalych7/OtusProjectWork/internal/sqlstorage"
@@ -15,29 +16,31 @@ import (
 
 var configFile string
 
-type ServerInterface interface {
-	Serve() error
-	Stop() error
-}
-
-var server ServerInterface
-
 func init() {
 	flag.StringVar(&configFile, "config", "../../configs/config.toml", "Path to configuration file")
 }
 
 func main() {
+	var logg ms.Logger
+	var myBandid ms.MyBandit
+	var storage ms.Storage
+	var server ms.Server
+	var err error
+
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 	flag.Parse()
 	config := NewConfig(configFile)
-	logg := logger.New(config.Logger.LogFile, config.Logger.Level)
-	logg.Info("Start!")
-	myBandid := manyarmedbandit.New(config.Bandit)
 
-	storage := sqlstorage.New(ctx, config.DB, myBandid)
-	if err := storage.Connect(); err != nil {
+	logg = logger.New(config.Logger.LogFile, config.Logger.Level)
+	logg.Info("Start!")
+	myBandid = manyarmedbandit.New(config.Bandit)
+
+	storage = sqlstorage.New(config.DB, myBandid)
+	ctxDB, cancel := context.WithTimeout(ctx, time.Second*time.Duration(config.HTTP.TimeOutSec))
+	defer cancel()
+	if err = storage.Connect(ctxDB); err != nil {
 		logg.Error(err.Error())
 		time.Sleep(time.Minute * 1)
 	} else {
@@ -45,7 +48,7 @@ func main() {
 	}
 	defer storage.Close()
 
-	server = internalhttp.NewServer(ctx, storage, ":"+config.HTTP.Port, logg)
+	server = internalhttp.NewServer(ctx, storage, config.HTTP, logg)
 	defer server.Stop()
 
 	go func() {

@@ -9,6 +9,13 @@ type Logger struct {
 	mock.Mock
 }
 
+// Debug provides a mock function with given fields: args
+func (_m *Logger) Debug(args ...interface{}) {
+	var _ca []interface{}
+	_ca = append(_ca, args...)
+	_m.Called(_ca...)
+}
+
 // Error provides a mock function with given fields: args
 func (_m *Logger) Error(args ...interface{}) {
 	var _ca []interface{}
@@ -16,8 +23,29 @@ func (_m *Logger) Error(args ...interface{}) {
 	_m.Called(_ca...)
 }
 
+// Fatal provides a mock function with given fields: args
+func (_m *Logger) Fatal(args ...interface{}) {
+	var _ca []interface{}
+	_ca = append(_ca, args...)
+	_m.Called(_ca...)
+}
+
 // Info provides a mock function with given fields: args
 func (_m *Logger) Info(args ...interface{}) {
+	var _ca []interface{}
+	_ca = append(_ca, args...)
+	_m.Called(_ca...)
+}
+
+// Trace provides a mock function with given fields: args
+func (_m *Logger) Trace(args ...interface{}) {
+	var _ca []interface{}
+	_ca = append(_ca, args...)
+	_m.Called(_ca...)
+}
+
+// Warning provides a mock function with given fields: args
+func (_m *Logger) Warning(args ...interface{}) {
 	var _ca []interface{}
 	_ca = append(_ca, args...)
 	_m.Called(_ca...)

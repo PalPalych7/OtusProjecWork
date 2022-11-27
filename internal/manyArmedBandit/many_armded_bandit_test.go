@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	ms "github.com/PalPalych7/OtusProjectWork/internal/mainstructs"
 	"github.com/stretchr/testify/require"
 )
 
@@ -16,7 +17,7 @@ func isClick(myRandProc int) int {
 }
 
 func TestMABandit(t *testing.T) {
-	var myArBS []BannerStruct
+	var myArBS []ms.BannerStruct
 	var myRandProc []int // сгенерированная вероятность кликоа на баннер
 	genCount := 50000    // количество запросов
 	bannerCount := 50    // кол-во баннеров
@@ -24,10 +25,19 @@ func TestMABandit(t *testing.T) {
 	var minProc float32 = 100
 	var maxProc float32
 
-	myBandit := New(BanditConfig{250, 500, 10})
+	myBandit := New(
+		ms.BanditConfig{
+			FullLearnigCount:     250,
+			PartialLearningCount: 500,
+			FinalRandomPecent:    10,
+		})
 
 	for i := 1; i <= bannerCount; i++ { // генерим вероятность клика для каждого баннера
-		myArBS = append(myArBS, BannerStruct{i, 0, 0})
+		myArBS = append(myArBS, ms.BannerStruct{
+			BannerID:   i,
+			ShowCount:  0,
+			ClickCount: 0,
+		})
 		myRandProc = append(myRandProc, randInt(100))
 	}
 	for i := 1; i <= genCount; i++ { // вызов метода заданное кол-во раз
